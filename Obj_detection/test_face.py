@@ -8,6 +8,6 @@ model_path = hf_hub_download(repo_id="arnabdhar/YOLOv8-Face-Detection", filename
 # load model
 model = YOLO(model_path)
 # inference
-image_path = "PRI_223554170-ezgif.com-webp-to-jpg-converter.jpg"
+image_path = "Obj_detection/faces.jpg"
 output = model(Image.open(image_path))
 results = Detections.from_ultralytics(output[0])
