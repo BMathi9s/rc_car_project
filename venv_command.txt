@@ -1,0 +1,5 @@
+
+where your venv is : 
+
+source venv/bin/activate
+deactivate

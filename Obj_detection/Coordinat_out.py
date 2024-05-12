@@ -39,11 +39,11 @@ def main():
             print(f"Face detected at x={x}, y={y}, width={w}, height={h}")
 
         # Display the resulting frame
-        cv2.imshow('Camera', frame)
+        # cv2.imshow('Camera', frame)
 
-        # Break the loop if 'q' is pressed
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
+        # # Break the loop if 'q' is pressed
+        # if cv2.waitKey(1) & 0xFF == ord('q'):
+        #     break
 
     # Release the camera and close the window
     cap.release()
