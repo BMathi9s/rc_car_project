@@ -38,13 +38,13 @@ def main():
             x, y, w, h = result  # If result is a tuple of four elements
             print(f"Face detected at x={x}, y={y}, width={w}, height={h}")
             # Draw rectangle around the face
-            cv2.rectangle(frame, (int(x), int(y)), (int(w), int(h)), (0, 0, 255), 2)
-        # Display the resulting frame
-        cv2.imshow('Camera', frame)
+        #     cv2.rectangle(frame, (int(x), int(y)), (int(w), int(h)), (0, 0, 255), 2)
+        # # Display the resulting frame
+        # cv2.imshow('Camera', frame)
 
-        # Break the loop if 'q' is pressed
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
+        # # Break the loop if 'q' is pressed
+        # if cv2.waitKey(1) & 0xFF == ord('q'):
+        #     break
 
     # Release the camera and close the window
     cap.release()

@@ -32,7 +32,6 @@ def main():
         
         # print(f"RESULTS :  {results} -- {type(results)}")
         
-        
         # Print the bounding box coordinates of each detected faceq
         for result in results.xyxy:
             x, y, w, h = result  # If result is a tuple of four elements
