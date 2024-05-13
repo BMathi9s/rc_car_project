@@ -5,3 +5,4 @@ supervision
 pillow
 inputs
 pyPS4Controller
+adafruit_servokit
