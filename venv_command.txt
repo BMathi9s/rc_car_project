@@ -1,5 +1,5 @@
-
-where your venv is : 
+to creat the virtual env : python3 -m venv venv
+where your folder venv is : 
 
 source venv/bin/activate
 ::to install all library : 
