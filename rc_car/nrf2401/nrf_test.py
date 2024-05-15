@@ -1,5 +1,5 @@
 import argparse
-from datetime import datetime
+from datetimes import datetime
 import struct
 import sys
 import time
@@ -35,11 +35,11 @@ if __name__ == "__main__":
         sys.exit(1)
     
     # Connect to pigpiod
-    print(f'Connecting to GPIO daemon on {hostname}:{port} ...')
-    pi = pigpio.pi(hostname, port)
-    if not pi.connected:
-        print("Not connected to Raspberry Pi ... goodbye.")
-        exit()
+    # print(f'Connecting to GPIO daemon on {hostname}:{port} ...')
+    # pi = pigpio.pi(hostname, port)
+    # if not pi.connected:
+    #     print("Not connected to Raspberry Pi ... goodbye.")
+    #     exit()
 
     # Create NRF24 object.
     # PLEASE NOTE: PA level is set to MIN, because test sender/receivers are often close to each other, and then MIN works better.
