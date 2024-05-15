@@ -8,19 +8,19 @@
 # chip = gpiod.chip('gpiochip4')
 # line = chip.get_line(17)
 # line.request(consumer="myApp", type=gpiod.LINE_REQ_DIR_OUT)
-
-
-from lib_nrf24 import NRF24
+from lib_nrf import NRF24
+#import lib_nrf as NRF24
+#from lib_nrf24 import NRF24
 import time
 import spidev
-from gpiozero import DigitalOutputDevice
+#from gpiozero import DigitalOutputDevice
 # Replace GPIO pin number with the one you're using
-gpio_pin = DigitalOutputDevice(17)
+#gpio_pin = DigitalOutputDevice(17)
 
 pipes = [[0xe7, 0xe7, 0xe7, 0xe7, 0xe7], [0xc2, 0xc2, 0xc2, 0xc2, 0xc2]]
 
-radio2 = NRF24(gpio_pin, spidev.SpiDev())
-radio2.begin(0, 17)
+radio2 = NRF24(0, spidev.SpiDev())
+radio2.begin(25, 8)#csn ce
 
 radio2.setRetries(15,15)
 
