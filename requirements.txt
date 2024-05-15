@@ -6,3 +6,4 @@ pillow
 inputs
 pyPS4Controller
 adafruit_servokit
+nrf24
