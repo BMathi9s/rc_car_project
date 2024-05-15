@@ -5,7 +5,7 @@
 #
 
 import gpiod
-chip = gpiod.Chip('gpiochip4')
+chip = gpiod.chip('gpiochip4')
 line = chip.get_line(17)
 line.request(consumer="myApp", type=gpiod.LINE_REQ_DIR_OUT)
 
