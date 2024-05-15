@@ -27,6 +27,7 @@
 import sys
 import time
 from gpiozero import DigitalOutputDevice
+import spidev
 
 if __name__ == '__main__':
     print (sys.argv[0], 'is an importable module:')
