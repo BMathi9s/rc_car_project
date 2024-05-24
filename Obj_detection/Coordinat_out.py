@@ -11,6 +11,7 @@ from PIL import Image
 def main():
         # download model
     model_path = hf_hub_download(repo_id="arnabdhar/YOLOv8-Face-Detection", filename="model.pt")
+    
     # load model
     model = YOLO(model_path)
     # Open the default camera (usually the first one)
