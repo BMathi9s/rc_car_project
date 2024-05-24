@@ -11,13 +11,16 @@
 
 //output 
 //nrf2401 spi ((mosi)D23,(miso)D19,(SDK)D18,(CSN)D5,(CE) D4 )
-#include "I2Cdev.h"
-#include "MPU6050.h"  //mpu6050 from electric
-#if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
-    #include "Wire.h"
-#endif
 
-MPU6050 mpu6050;
+
+
+// #include "I2Cdev.h"
+// #include "MPU6050.h"  //mpu6050 from electric
+// #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
+//     #include "Wire.h"
+// #endif
+
+// MPU6050 mpu6050;
 
 
 
@@ -169,7 +172,7 @@ void setup() {
     pinMode(SWITCH2_PIN1, INPUT_PULLUP);
     attachInterrupt(digitalPinToInterrupt(SWITCH2_PIN1), handleSwitch2Pin1Interrupt, CHANGE);
 
-    mpu6050_begin();
+    //mpu6050_begin();
    
 
 
@@ -196,8 +199,8 @@ void loop() {
     byte joystick2Y = map(analogRead(JOYSTICK2_Y_PIN), 0, 4095, 0, 255);
     
     
-    yaw_fpv =  mpu6050.getRotationZ();
-    pitch_fpv = mpu6050.getRotationY();
+    yaw_fpv = 0; // mpu6050.getRotationZ();
+    pitch_fpv = 0;// mpu6050.getRotationY();
 
     Serial.println(yaw_fpv);
     delay(300);
