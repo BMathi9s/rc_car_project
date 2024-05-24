@@ -11,6 +11,13 @@
 
 //output 
 //nrf2401 spi ((mosi)D23,(miso)D19,(SDK)D18,(CSN)D5,(CE) D4 )
+#include "I2Cdev.h"
+#include "MPU6050.h"  //mpu6050 from electric
+#if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
+    #include "Wire.h"
+#endif
+
+MPU6050 mpu6050;
 
 
 
@@ -90,6 +97,8 @@ volatile bool button7State = false;
 volatile bool button8State = false;
 volatile bool button9State = false;
 volatile bool button10State = false;
+int16_t yaw_fpv;
+int16_t pitch_fpv;
 
 // Volatile variables for switch states
 volatile bool switch1State1 = false;
@@ -112,8 +121,27 @@ void IRAM_ATTR handleButton10Interrupt() { button10State = !button10State; }
 void IRAM_ATTR handleSwitch1Pin1Interrupt() { switch1State1 = digitalRead(SWITCH1_PIN1); }
 void IRAM_ATTR handleSwitch2Pin1Interrupt() { switch2State1 = digitalRead(SWITCH2_PIN1); }
 
+
+void mpu6050_begin(){
+   #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
+        Wire.begin();
+    #elif I2CDEV_IMPLEMENTATION == I2CDEV_BUILTIN_FASTWIRE
+        Fastwire::setup(400, true);
+    #endif
+
+
+    Serial.println("Initializing I2C devices...");
+    mpu6050.initialize();
+     Serial.println("Testing device connections...");
+    Serial.println(mpu6050.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
+
+}
+
+
 void setup() {
     Serial.begin(115200);
+    // Initialize MPU6050 and I2C
+    
 
     // Initialize button pins with pull-up resistors and attach interrupts
     pinMode(BUTTON1_PIN, INPUT_PULLUP);
@@ -141,12 +169,20 @@ void setup() {
     pinMode(SWITCH2_PIN1, INPUT_PULLUP);
     attachInterrupt(digitalPinToInterrupt(SWITCH2_PIN1), handleSwitch2Pin1Interrupt, CHANGE);
 
+    mpu6050_begin();
+   
+
 
 }
 
+
+
 void loop() {
 
+  
+   
 
+   
     //   Byte, "char"	255	2 2 hex characted   -> but char is -128 to 127 while byte is 0->255
     // "short" 	65535	4 hex characted
     // "int" (Windows DWORD)	>4 billion	8 hex characted
@@ -158,8 +194,14 @@ void loop() {
     byte joystick1Y = map(analogRead(JOYSTICK1_Y_PIN), 0, 4095, 0, 255);
     byte joystick2X = map(analogRead(JOYSTICK2_X_PIN), 0, 4095, 0, 255);
     byte joystick2Y = map(analogRead(JOYSTICK2_Y_PIN), 0, 4095, 0, 255);
-    byte yaw_fpv;
-    byte pitch_fpv; 
+    
+    
+    yaw_fpv =  mpu6050.getRotationZ();
+    pitch_fpv = mpu6050.getRotationY();
+
+    Serial.println(yaw_fpv);
+    delay(300);
+    
 
 
 
@@ -184,6 +226,8 @@ void loop() {
     inputs.yaw_fpv = yaw_fpv;
     inputs.pitch_fpv = pitch_fpv;
 
-    //send inputs
+    //send packet
+
+    
 }
 
