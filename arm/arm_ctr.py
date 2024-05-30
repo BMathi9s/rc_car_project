@@ -71,8 +71,8 @@ def main():
         #cv2.imshow('Camera', frame)
 
         # Break the loop if any key is pressed
-        # if cv2.waitKey(1) != -1:
-        #     break
+        if cv2.waitKey(1) != -1:
+            break
 
     # Release the camera and close the window
     cap.release()
