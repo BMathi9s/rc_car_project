@@ -1,6 +1,6 @@
 # load libraries
 import cv2
-from huggingface_hub import hf_hub_download
+import os
 from ultralytics import YOLO
 from supervision import Detections
 from PIL import Image
@@ -10,11 +10,23 @@ from turret import Turret
 
 def main():
     # download model
-    model_path = hf_hub_download(repo_id="arnabdhar/YOLOv8-Face-Detection", filename="model.pt")
+    # model_path = hf_hub_download(repo_id="arnabdhar/YOLOv8-Face-Detection", filename="model.pt")
     
     # load model
-    model = YOLO(model_path)
+    # model = YOLO(model_path)
     # Open the default camera (usually the first one)
+    
+    local_model_path = "models--arnabdhar--YOLOv8-Face-Detection/snapshots/52fa54977207fa4f021de949b515fb19dcab4488/model.pt"
+    
+    # Check if the local model file exists
+    if not os.path.exists(local_model_path):
+        print(f"Model file not found at {local_model_path}. Please download it first.")
+        return
+
+    # Load model
+    model = YOLO(local_model_path)
+    
+    
     cap = cv2.VideoCapture(0)
     # Check if the camera opened successfully
     if not cap.isOpened():
