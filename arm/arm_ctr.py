@@ -5,7 +5,18 @@ from ultralytics import YOLO
 from supervision import Detections
 from PIL import Image
 import numpy as np
+import matplotlib.pyplot as plt
 from turret import Turret
+
+
+def display_frame(frame):
+    # Convert the frame from BGR to RGB (OpenCV uses BGR, matplotlib uses RGB)
+    rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    plt.imshow(rgb_frame)
+    plt.axis('off')
+    plt.show(block=False)
+    plt.pause(0.001)
+    plt.clf()
 
 
 def main():
@@ -71,8 +82,8 @@ def main():
                 # Update turret position
                 turret.update(face_diff_x, face_diff_y)
         
-        # Display the resulting frame
-        cv2.imshow('Camera', frame)
+        # Display the resulting frame using matplotlib
+        display_frame(frame)
 
         # Break the loop if any key is pressed
         if cv2.waitKey(1) != -1:
@@ -80,7 +91,7 @@ def main():
 
     # Release the camera and close the window
     cap.release()
-    cv2.destroyAllWindows()
+    plt.close()
 
 if __name__ == "__main__":
     main()
