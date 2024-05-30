@@ -62,16 +62,16 @@ def main():
             print(f"Closest face detected at x1={x1}, y1={y1}, x2={x2}, y2={y2}")
             print(f"Difference from center: x_diff={face_diff_x}, y_diff={face_diff_y}")
             # Draw rectangle around the closest face
-            cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 0, 255), 2)
+            #cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 0, 255), 2)
             # Update turret position
             turret.update(face_diff_x, face_diff_y)
         
         # Display the resulting frame
-        cv2.imshow('Camera', frame)
+        #cv2.imshow('Camera', frame)
 
         # Break the loop if any key is pressed
-        if cv2.waitKey(1) != -1:
-            break
+        # if cv2.waitKey(1) != -1:
+        #     break
 
     # Release the camera and close the window
     cap.release()
