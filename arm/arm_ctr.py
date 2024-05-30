@@ -23,7 +23,7 @@ def main():
     
     # Initialize the turret
     turret = Turret(base_channel=0, canon_channel=1)
-    Turret.set_proportionnal_constant(constant=0.05)
+    turret.set_proportionnal_constant(constant=0.05)
     
     while True:
         # Capture frame-by-frame

@@ -12,6 +12,9 @@ class Turret:
         self.kit.servo[self.base_channel].angle = self.base_angle
         self.kit.servo[self.canon_channel].angle = self.canon_angle
         self.prop_const = 0.01
+    
+    def set_proportionnal_constant(self, constant):
+        self.prop_const = constant
 
     def update(self, x_diff, y_diff):
         # Here, you need to convert x_diff and y_diff into angle changes.
@@ -27,5 +30,4 @@ class Turret:
         self.kit.servo[self.base_channel].angle = self.base_angle
         self.kit.servo[self.canon_channel].angle = self.canon_angle
     
-    def set_proportionnal_constant(self, constant):
-        self.prop_const = constant
+    
