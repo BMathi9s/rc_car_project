@@ -26,8 +26,8 @@ class Turret:
         canon_change = -y_diff * self.prop_const  # Use the proportional constant
 
         # Apply damping factor
-        # base_change *= self.damping_factor
-        # canon_change *= self.damping_factor
+        base_change *= self.damping_factor
+        canon_change *= self.damping_factor
 
         self.base_angle = max(self.min_angle, min(self.max_angle, self.base_angle + base_change))
         self.canon_angle = max(self.min_angle, min(self.max_angle, self.canon_angle + canon_change))
