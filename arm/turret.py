@@ -1,4 +1,5 @@
 from adafruit_servokit import ServoKit
+import time
 
 class Turret:
     def __init__(self, base_channel, canon_channel, min_angle=0, max_angle=180):
@@ -35,3 +36,5 @@ class Turret:
         self.kit.servo[self.base_channel].angle = self.base_angle
         self.kit.servo[self.canon_channel].angle = self.canon_angle
         print(f"turret ctr: base={self.base_angle}, canon={self.canon_angle}")
+        time.sleep(0.2)
+        
