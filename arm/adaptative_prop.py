@@ -74,10 +74,10 @@ def main():
             # Only update turret if difference is significant
             if abs(face_diff_x) > 50 or abs(face_diff_y) > 50:
                 # Update turret position
-                turret.set_proportionnal_constant(constant=0.04) 
+                turret.set_proportionnal_constant(constant=0.01) 
                 turret.update(face_diff_x, face_diff_y)
             else :
-                turret.set_proportionnal_constant(constant=0.1) 
+                turret.set_proportionnal_constant(constant=0.2) 
                 turret.update(face_diff_x, face_diff_y)
                 
         
