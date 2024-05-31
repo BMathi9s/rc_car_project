@@ -41,6 +41,8 @@ def main():
             # Draw rectangle around the face
             cv2.rectangle(frame, (int(x), int(y)), (int(w), int(h)), (0, 0, 255), 2)
         # Display the resulting frame
+        
+        
         cv2.imshow('Camera', frame)
 
         # Break the loop if 'q' is pressed
