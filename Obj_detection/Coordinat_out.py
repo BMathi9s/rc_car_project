@@ -25,10 +25,11 @@ def main():
         ret, frame = cap.read()
 
         # Convert the image from BGR color (which OpenCV uses) to RGB color
-        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        can = cv2.Canny(rgb_frame,10,100)
 
         # Perform inference on the RGB image
-        output = model(Image.fromarray(rgb_frame))
+        output = model(Image.fromarray(can))
         results = Detections.from_ultralytics(output[0])
         
         # print(f"RESULTS :  {results} -- {type(results)}")
@@ -39,11 +40,11 @@ def main():
             x, y, w, h = result  # If result is a tuple of four elements
             print(f"Face detected at x={x}, y={y}, width={w}, height={h}")
             # Draw rectangle around the face
-            cv2.rectangle(frame, (int(x), int(y)), (int(w), int(h)), (0, 0, 255), 2)
+            cv2.rectangle(can, (int(x), int(y)), (int(w), int(h)), (0, 0, 255), 2)
         # Display the resulting frame
         
         
-        cv2.imshow('Camera', frame)
+        cv2.imshow('Camera', can)
 
         # Break the loop if 'q' is pressed
         if cv2.waitKey(1) & 0xFF == ord('q'):
