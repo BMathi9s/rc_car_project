@@ -12,8 +12,10 @@ byte joystickData[2]; // Array to hold X and Y values
 #define MOTOR_DIR_R 14
 #define MOTOR_PWN_R 27
 
-const byte deadZoneMin = 113; // 118 - 5
-const byte deadZoneMax = 123; // 118 + 5
+#define MAX_SPEED 255/2
+
+const byte deadZoneMin = 108; // 118 - 10
+const byte deadZoneMax = 128; // 118 + 10
 
 void setup() {
     Serial.begin(9600); // Begin Serial communication
@@ -55,20 +57,22 @@ void loop() {
 
 // Handle joystick input and control motors
 void handleJoystickInput(byte x, byte y) {
+  //TODO Add exponential decay instead of absrubt stop
+
     if (x >= deadZoneMin && x <= deadZoneMax && y >= deadZoneMin && y <= deadZoneMax) {
         stop();
         return;
     }
 
-    int mappedX = map(x, 0, 255, -255, 255);
-    int mappedY = map(y, 0, 255, -255, 255);
+    int mappedX = map(x, 0, MAX_SPEED, -MAX_SPEED, MAX_SPEED);
+    int mappedY = map(y, 0, MAX_SPEED, -MAX_SPEED, MAX_SPEED);
 
-    // Calculate motor speeds for smoother diagonal movement
-    float speedL = (mappedY + mappedX);
-    float speedR = (mappedY - mappedX);
+    float speedL, speedR;
+    calculateMotorSpeeds(mappedX, mappedY, speedL, speedR);
 
-    int motorSpeedL = constrain(speedL, -255, 255);
-    int motorSpeedR = constrain(speedR, -255, 255);
+    // Ensure speeds are within bounds
+    int motorSpeedL = constrain(speedL, -MAX_SPEED, MAX_SPEED);
+    int motorSpeedR = constrain(speedR, -MAX_SPEED, MAX_SPEED);
 
     // This sets the motor speed and direction
     setMotorSpeed(motorSpeedL, MOTOR_DIR_L, MOTOR_PWN_L);
@@ -79,6 +83,17 @@ void handleJoystickInput(byte x, byte y) {
     Serial.print(" | Motor Speed R: ");
     Serial.println(motorSpeedR);
 }
+
+// Function to calculate motor speeds based on joystick inputs
+void calculateMotorSpeeds(int mappedX, int mappedY, float &speedL, float &speedR) {
+    // Dynamic turn factor based on joystick's position
+    float turnFactor = 1.0 - (abs(mappedY) / MAX_SPEED); // Higher Y input results in lower turn factor
+
+    // Calculate the motor speeds directly
+    speedL = mappedY + (mappedX * turnFactor);
+    speedR = mappedY - (mappedX * turnFactor);
+}
+
 
 // Set motor speed and direction
 void setMotorSpeed(int speed, int dirPin, int pwmPin) {
