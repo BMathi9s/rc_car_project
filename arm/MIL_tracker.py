@@ -4,9 +4,10 @@ from ultralytics import YOLO
 from supervision import Detections
 from PIL import Image
 import numpy as np
+from turret import Turret
 
 def main():
-    local_model_path = "models--arnabdhar--YOLOv8-Face-Detection/snapshots/52fa54977207fa4f021de949b515fb19dcab4488/model.pt"
+    local_model_path = "../models--arnabdhar--YOLOv8-Face-Detection/snapshots/52fa54977207fa4f021de949b515fb19dcab4488/model.pt"
     
     if not os.path.exists(local_model_path):
         print(f"../Model file not found at {local_model_path}. Please download it first.")
@@ -20,19 +21,13 @@ def main():
         print("Error: Could not open camera.")
         return
     
-    # Choose your tracker here
-    # tracker = cv2.TrackerMIL_create()
+    # Initialize the turret
+    turret = Turret(base_channel=0, canon_channel=1)
+    turret.set_proportionnal_constant(constant=0.05)  # Set the proportional constant
+    turret.set_damping_factor(damping_factor=0.5)  # Set the damping factor
     
-    #those dont work
-    # --tracker = cv2.TrackerBoosting_create()
-    # -- tracker = cv2.TrackerKCF_create()
-    #-- tracker = cv2.TrackerTLD_create()
-    #--tracker = cv2.TrackerMedianFlow_create()
-    #--tracker = cv2.TrackerCSRT_create()
-    #--tracker = cv2.TrackerMOSSE_create()
-    #somehow this one work : 
+    # Choose your tracker here
     tracker = cv2.TrackerMIL_create()
-    #tracker = cv2.TrackerVit()
     
     tracking = False
     
@@ -79,14 +74,22 @@ def main():
                 face_center_x = p1[0] + (bbox[2] // 2)
                 face_center_y = p1[1] + (bbox[3] // 2)
                 print(f"Tracking face center: x={face_center_x}, y={face_center_y}")
-                cv2.rectangle(frame, p1, p2, (255, 0, 0), 2, 1)
+                #cv2.rectangle(frame, p1, p2, (255, 0, 0), 2, 1)
+                
+                # Calculate the difference from the center of the screen
+                screen_center_x = frame.shape[1] // 2
+                screen_center_y = frame.shape[0] // 2
+                face_diff_x = face_center_x - screen_center_x
+                face_diff_y = face_center_y - screen_center_y
+                
+                turret.update(face_diff_x, face_diff_y)
             else:
                 tracking = False
 
-        cv2.imshow('Camera', frame)
+        #cv2.imshow('Camera', frame)
 
-        if cv2.waitKey(1) != -1:
-            break
+        # if cv2.waitKey(1) != -1:
+        #     break
 
     cap.release()
     cv2.destroyAllWindows()
