@@ -23,7 +23,7 @@ def main():
     
     # Initialize the turret
     turret = Turret(base_channel=0, canon_channel=1)
-    turret.set_proportionnal_constant(constant=0.05)  # Set the proportional constant
+    turret.set_proportionnal_constant(constant=0.01)  # Set the proportional constant
     
     
     # Choose your tracker here
@@ -74,7 +74,7 @@ def main():
                 face_center_x = p1[0] + (bbox[2] // 2)
                 face_center_y = p1[1] + (bbox[3] // 2)
                 print(f"Tracking face center: x={face_center_x}, y={face_center_y}")
-                #cv2.rectangle(frame, p1, p2, (255, 0, 0), 2, 1)
+                cv2.rectangle(frame, p1, p2, (255, 0, 0), 2, 1)
                 
                 # Calculate the difference from the center of the screen
                 screen_center_x = frame.shape[1] // 2
@@ -86,10 +86,10 @@ def main():
             else:
                 tracking = False
 
-        #cv2.imshow('Camera', frame)
+        cv2.imshow('Camera', frame)
 
-        # if cv2.waitKey(1) != -1:
-        #     break
+        if cv2.waitKey(1) != -1:
+            break
 
     cap.release()
     cv2.destroyAllWindows()
