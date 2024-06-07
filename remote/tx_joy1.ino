@@ -5,8 +5,8 @@
 RF24 radio(4, 5); // (CE, CSN)
 
 // Define joystick pins
-#define JOYSTICK1_X_PIN 34 // example pin, change as needed
-#define JOYSTICK1_Y_PIN 35 // example pin, change as needed
+#define JOYSTICK1_X_PIN 27 // example pin, change as needed
+#define JOYSTICK1_Y_PIN 14 // example pin, change as needed
 
 byte joystickData[2];
 
@@ -35,7 +35,7 @@ void loop() {
   // Send joystick data
   radio.write(&joystickData, sizeof(joystickData));
 
-  delay(10);
+  delay(10);kbkhbv
   Serial.print("Joystick X: ");
   Serial.print(joystickData[0]);
   Serial.print(" | Joystick Y: ");

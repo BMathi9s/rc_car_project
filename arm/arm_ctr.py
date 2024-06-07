@@ -16,7 +16,7 @@ def main():
     # model = YOLO(model_path)
     # Open the default camera (usually the first one)
     
-    local_model_path = "models--arnabdhar--YOLOv8-Face-Detection/snapshots/52fa54977207fa4f021de949b515fb19dcab4488/model.pt"
+    local_model_path = "../models--arnabdhar--YOLOv8-Face-Detection/snapshots/52fa54977207fa4f021de949b515fb19dcab4488/model.pt"
     
     # Check if the local model file exists
     if not os.path.exists(local_model_path):

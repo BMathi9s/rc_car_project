@@ -3,8 +3,5 @@ huggingface_hub
 ultralytics
 supervision
 pillow
-inputs
-pyPS4Controller
-adafruit_servokit
-nrf24
-DateTime
+adafruit-circuitpython-servokit
+gpiod

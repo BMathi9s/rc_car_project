@@ -1,0 +1,42 @@
+This code performs face detection and tracking on a video using OpenCV and the CentroidTracker algorithm. Here's a detailed explanation of the code:
+
+1. The necessary libraries are imported:
+   - `cv2`: OpenCV library for computer vision tasks.
+   - `datetime`: Library for working with dates and times.
+   - `imutils`: Provides convenience functions for resizing and manipulating images.
+   - `numpy`: Library for numerical computations.
+   - `CentroidTracker` (custom import): A class that implements the CentroidTracker algorithm for object tracking.
+
+2. The paths to the face detection model files are specified:
+   - `protopath`: Path to the prototxt file which defines the model architecture.
+   - `modelpath`: Path to the pre-trained Caffe model weights.
+
+3. The face detection model is loaded using `cv2.dnn.readNetFromCaffe()` function, which reads the model architecture and weights from the specified files.
+
+4. The `CentroidTracker` object `ct` is initialized with parameters `60` and `45`. These parameters define the maximum number of consecutive frames an object can be "disappeared" (not detected) and the maximum distance between centroids to associate two bounding boxes as the same object.
+
+5. The video capture object `cap` is created using `cv2.VideoCapture()` and is opened with the path to the input video file specified as `"videos/video_people.mp4"`.
+
+6. `cap.set(cv2.CAP_PROP_POS_MSEC, 2000)` is used to skip the first 2000 milliseconds (2 seconds) of the video. This is achieved by setting the `cv2.CAP_PROP_POS_MSEC` property of the video capture object to the desired position in milliseconds.
+
+7. Inside the main loop, each frame of the video is read using `cap.read()`. The returned values `ret` and `frame` indicate whether a frame was successfully read and contain the frame data, respectively.
+
+8. The frame is resized to a width of 600 pixels using `imutils.resize()` for faster processing. The width and height of the resized frame are stored in `W` and `H` variables.
+
+9. The frame is preprocessed for face detection using `cv2.dnn.blobFromImage()`. It resizes the frame to (300, 300) pixels, subtracts the mean RGB values of the training set, and normalizes the values.
+
+10. The preprocessed frame is passed as input to the face detection model using `detector.setInput()`. The model performs face detection on the frame, and the output detections are obtained using `detector.forward()`.
+
+11. Detected faces with confidence above 0.7 are filtered and stored in the `rects` list as bounding box coordinates.
+
+12. The `ct.update()` method is called to update the CentroidTracker with the detected face bounding boxes. It returns a dictionary `objects` containing the object IDs and corresponding bounding boxes.
+
+13. The bounding boxes and object IDs are drawn on the frame using `cv2.rectangle()` and `cv2.putText()` functions, respectively.
+
+14. The processed frame with bounding boxes and IDs is displayed using `cv2.imshow()`.
+
+15. The code waits for a key press using `cv2.waitKey(1)` and checks if the key is 'q' to break out of the loop and exit the program.
+
+16. Once the loop is terminated, the OpenCV windows are closed using `cv2.destroyAllWindows()`.
+
+This code essentially performs real-time face detection and tracking on a video stream, drawing bounding boxes around the detected faces and displaying the results.

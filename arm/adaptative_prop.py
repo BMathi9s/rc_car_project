@@ -9,7 +9,7 @@ from turret import Turret
 
 
 def main():
-    local_model_path = "models--arnabdhar--YOLOv8-Face-Detection/snapshots/52fa54977207fa4f021de949b515fb19dcab4488/model.pt"
+    local_model_path = "../models--arnabdhar--YOLOv8-Face-Detection/snapshots/52fa54977207fa4f021de949b515fb19dcab4488/model.pt"
     
     # Check if the local model file exists
     if not os.path.exists(local_model_path):
@@ -74,10 +74,10 @@ def main():
             # Only update turret if difference is significant
             if abs(face_diff_x) > 50 or abs(face_diff_y) > 50:
                 # Update turret position
-                turret.set_proportionnal_constant(constant=0.05) 
+                turret.set_proportionnal_constant(constant=0.01) 
                 turret.update(face_diff_x, face_diff_y)
             else :
-                turret.set_proportionnal_constant(constant=0.01) 
+                turret.set_proportionnal_constant(constant=0.2) 
                 turret.update(face_diff_x, face_diff_y)
                 
         
