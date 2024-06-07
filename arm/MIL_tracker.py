@@ -1,5 +1,6 @@
 import cv2
 import os
+import time
 from ultralytics import YOLO
 from supervision import Detections
 from PIL import Image
@@ -23,13 +24,13 @@ def main():
     
     # Initialize the turret
     turret = Turret(base_channel=0, canon_channel=1)
-    turret.set_proportionnal_constant(constant=0.01)  # Set the proportional constant
-    
-    
+    turret.set_proportionnal_constant(constant=0.02)  # Set the proportional constant
+
     # Choose your tracker here
-    tracker = cv2.TrackerMIL_create()
+    tracker = cv2.TrackerMIL.create()
     
     tracking = False
+    last_inference_time = time.time()  # Track the time of the last inference
     
     while True:
         ret, frame = cap.read()
@@ -37,6 +38,11 @@ def main():
             break
 
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+        # Check if 10 seconds have passed since the last inference
+        current_time = time.time()
+        if tracking and (current_time - last_inference_time) > 10:
+            tracking = False  # Force a new inference
 
         if not tracking:
             output = model(Image.fromarray(rgb_frame))
@@ -66,6 +72,7 @@ def main():
                 bbox = (int(x1), int(y1), int(x2-x1), int(y2-y1))
                 tracker.init(frame, bbox)
                 tracking = True
+                last_inference_time = current_time  # Reset the inference timer
         else:
             tracking, bbox = tracker.update(frame)
             if tracking:
@@ -86,8 +93,6 @@ def main():
                 if abs(face_diff_x) > 30 or abs(face_diff_y) > 30:
                     # Update turret position
                     turret.update(face_diff_x, face_diff_y)
-                
-                
             else:
                 tracking = False
 
