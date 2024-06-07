@@ -81,9 +81,9 @@ def main():
                 screen_center_y = frame.shape[0] // 2
                 face_diff_x = face_center_x - screen_center_x
                 face_diff_y = face_center_y - screen_center_y
-                print(f"Tracking face center: x={face_diff_x}, y={face_diff_y}")
+                print(f"Tracking face center differences : x={face_diff_x}, y={face_diff_y}")
                 
-                if abs(face_diff_x) > 10 or abs(face_diff_y) > 10:
+                if abs(face_diff_x) > 30 or abs(face_diff_y) > 30:
                     # Update turret position
                     turret.update(face_diff_x, face_diff_y)
                 
