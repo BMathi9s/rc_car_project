@@ -7,7 +7,7 @@ import numpy as np
 from turret import Turret
 
 def main():
-    local_model_path = "models--arnabdhar--YOLOv8-Face-Detection/snapshots/52fa54977207fa4f021de949b515fb19dcab4488/model.pt"
+    local_model_path = "../models--arnabdhar--YOLOv8-Face-Detection/snapshots/52fa54977207fa4f021de949b515fb19dcab4488/model.pt"
     
     if not os.path.exists(local_model_path):
         print(f"../Model file not found at {local_model_path}. Please download it first.")
