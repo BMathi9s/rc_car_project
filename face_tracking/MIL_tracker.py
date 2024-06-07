@@ -15,6 +15,7 @@ def main():
     model = YOLO(local_model_path)
     
     cap = cv2.VideoCapture(0)
+    
     if not cap.isOpened():
         print("Error: Could not open camera.")
         return
@@ -31,6 +32,7 @@ def main():
     #--tracker = cv2.TrackerMOSSE_create()
     #somehow this one work : 
     tracker = cv2.TrackerMIL_create()
+    #tracker = cv2.TrackerVit()
     
     tracking = False
     
