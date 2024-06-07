@@ -24,7 +24,7 @@ def main():
     
     # Initialize the turret
     turret = Turret(base_channel=0, canon_channel=1)
-    turret.set_proportionnal_constant(constant=0.02)  # Set the proportional constant
+    turret.set_proportionnal_constant(constant=0.03)  # Set the proportional constant
 
     # Choose your tracker here
     tracker = cv2.TrackerMIL.create()
@@ -90,7 +90,7 @@ def main():
                 face_diff_y = face_center_y - screen_center_y
                 print(f"Tracking face center differences : x={face_diff_x}, y={face_diff_y}")
                 
-                if abs(face_diff_x) > 30 or abs(face_diff_y) > 30:
+                if abs(face_diff_x) > 10 or abs(face_diff_y) > 10:
                     # Update turret position
                     turret.update(face_diff_x, face_diff_y)
             else:
