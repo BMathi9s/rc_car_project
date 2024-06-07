@@ -8,7 +8,7 @@ class Turret:
         self.canon_channel = canon_channel
         self.min_angle = min_angle
         self.max_angle = max_angle
-        self.base_angle = (min_angle + max_angle) // 2
+        self.base_angle =  140 #(min_angle + max_angle) // 2
         self.canon_angle = (min_angle + max_angle) // 2
         self.prop_const = 0.01  # Default proportional constant
 
