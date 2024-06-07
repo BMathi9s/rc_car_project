@@ -22,7 +22,7 @@ class Turret:
     def update(self, x_diff, y_diff):
         # Invert the direction of the adjustments if necessary
         base_change = -x_diff * self.prop_const  # Use the proportional constant
-        canon_change = -y_diff * self.prop_const  # Use the proportional constant
+        canon_change = y_diff * self.prop_const  # Use the proportional constant
 
 
         self.base_angle = max(self.min_angle, min(self.max_angle, self.base_angle + base_change))
