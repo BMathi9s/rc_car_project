@@ -24,7 +24,7 @@ def main():
     # Initialize the turret
     turret = Turret(base_channel=0, canon_channel=1)
     turret.set_proportionnal_constant(constant=0.05)  # Set the proportional constant
-    turret.set_damping_factor(damping_factor=0.5)  # Set the damping factor
+    
     
     # Choose your tracker here
     tracker = cv2.TrackerMIL_create()

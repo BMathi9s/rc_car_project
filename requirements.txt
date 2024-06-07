@@ -4,3 +4,4 @@ ultralytics
 supervision
 pillow
 adafruit-circuitpython-servokit
+gpiod
