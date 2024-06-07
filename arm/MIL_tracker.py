@@ -91,10 +91,10 @@ def main():
             else:
                 tracking = False
 
-        cv2.imshow('Camera', frame)
+        # cv2.imshow('Camera', frame)
 
-        if cv2.waitKey(1) != -1:
-            break
+        # if cv2.waitKey(1) != -1:
+        #     break
 
     cap.release()
     cv2.destroyAllWindows()
