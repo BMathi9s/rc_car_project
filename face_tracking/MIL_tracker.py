@@ -84,6 +84,7 @@ def main():
                 tracking = False
 
         cv2.imshow('Camera', frame)
+        
 
         if cv2.waitKey(1) != -1:
             break
