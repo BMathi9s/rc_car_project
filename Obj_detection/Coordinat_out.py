@@ -16,6 +16,8 @@ def main():
     model = YOLO(model_path)
     # Open the default camera (usually the first one)
     cap = cv2.VideoCapture(0)
+    
+   
     # Check if the camera opened successfully
     if not cap.isOpened():
         print("Error: Could not open camera.")
@@ -25,11 +27,14 @@ def main():
         ret, frame = cap.read()
 
         # Convert the image from BGR color (which OpenCV uses) to RGB color
-        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        can = cv2.Canny(rgb_frame,10,100)
+        # rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        # can = cv2.Canny(rgb_frame,10,100)
+        frame = cv2.resize(frame, (160, 120))
+        
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
         # Perform inference on the RGB image
-        output = model(Image.fromarray(can))
+        output = model(Image.fromarray(frame))
         results = Detections.from_ultralytics(output[0])
         
         # print(f"RESULTS :  {results} -- {type(results)}")
@@ -40,11 +45,11 @@ def main():
             x, y, w, h = result  # If result is a tuple of four elements
             print(f"Face detected at x={x}, y={y}, width={w}, height={h}")
             # Draw rectangle around the face
-            cv2.rectangle(can, (int(x), int(y)), (int(w), int(h)), (0, 0, 255), 2)
+            cv2.rectangle(frame, (int(x), int(y)), (int(w), int(h)), (0, 0, 255), 2)
         # Display the resulting frame
         
         
-        cv2.imshow('Camera', can)
+        cv2.imshow('Camera', frame)
 
         # Break the loop if 'q' is pressed
         if cv2.waitKey(1) & 0xFF == ord('q'):
