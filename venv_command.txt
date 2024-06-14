@@ -6,3 +6,5 @@ source venv/bin/activate
 pip install -r requirements.txt
 
 deactivate
+to give access git hub : 
+ git remote set-url origin https://--classicgit--token@github.com/md/rc_car_project.git
