@@ -7,8 +7,9 @@ RF24 radio(4, 5); // (CE, CSN)
 #include <ESP32Servo.h> 
 //esp32servo by kevin 
 // only work by using version 1.2.1!!
-#define BASESERVO_PIN 26      // GPIO pin used to connect the servo control (digital out)
-#define HEADSERVO_PIN 33
+#define BASESERVO_PIN 25      // GPIO pin used to connect the servo control (digital out)
+#define HEADSERVO_PIN 26
+#define turretinc 2
 
 // Timeout variables
 unsigned long lastReceiveTime = 0;
@@ -34,8 +35,10 @@ const int resolution = 8;     // 8-bit resolution (0-255)
 Servo head; // (x)
 Servo base; // (y)
 // initialize 
-int xShift = 90;
-int yShift = 90;
+int xShift = 120;
+int yShift = 120;
+int midpointhead = 100;
+int midpointbase = 140;
 
 void setup() {
   // Initialize motor direction pins as outputs
@@ -106,48 +109,51 @@ void loop() {
 
 // Handle joystick input for car movement
 void handleJoystick1Input(byte x, byte y) {
-  const byte deadZoneMin = 118 - 5;
-  const byte deadZoneMax = 118 + 5;
+  const byte deadZoneMin = 118 - 10;
+  const byte deadZoneMax = 118 + 10;
 
   if (x >= deadZoneMin && x <= deadZoneMax && y >= deadZoneMin && y <= deadZoneMax) {
     stop();
   } else if (x > deadZoneMax) {
-    right(x);
-  } else if (x < deadZoneMin) {
     left(x);
+   
+  } else if (x < deadZoneMin) {
+    right(x);
   } else if (y > deadZoneMax) {
-    forward(y);
-  } else if (y < deadZoneMin) {
+    
     backward(y);
+  } else if (y < deadZoneMin) {
+    forward(y);
+    
   }
 }
 
 // Handle joystick for servo (camera) movement
 void handleServoJoystick(byte x, byte y, byte sw){
-  const byte deadZoneMin = 128 - 20;
-  const byte deadZoneMax = 128 + 20;
+  const byte deadZoneMin = 118 - 20;
+  const byte deadZoneMax = 118 + 20;
 
-  if(sw = HIGH){ // if joystick is pressed (switch)
-    xShift = 90;  // reset angles
-    yShift = 90;
+  if(sw == HIGH){ // if joystick is pressed (switch)
+    xShift = midpointbase;  // reset angles
+    yShift = midpointhead;
   } else if(x >= deadZoneMin && x <= deadZoneMax && y >= deadZoneMin && y <= deadZoneMax){
     // do nothing
   } 
   if (x > deadZoneMax){
       if(xShift <= 180)
-        xShift++;
+        xShift += turretinc;
   } 
   if (x < deadZoneMin){
       if(xShift >= 0)
-        xShift--;
+        xShift -= turretinc;
   } 
   if (y > deadZoneMax){
           if(yShift <= 180)
-        yShift++;
+        yShift += turretinc;
   } 
   if (y < deadZoneMin){
       if(yShift >= 0)
-        yShift--;
+        yShift -= turretinc;
   }
 
   head.write(xShift);
@@ -164,7 +170,7 @@ void stop() {
 
 void forward(int speed) {
   Serial.println("Forward");
-  speed = map(speed,123,255,0,255);
+ speed = map(speed,113,0,100,255);
   digitalWrite(MOTOR_DIR_L, HIGH);
   digitalWrite(MOTOR_DIR_R, HIGH);
   ledcWrite(pwmChannelL, speed);
@@ -173,7 +179,7 @@ void forward(int speed) {
 
 void backward(int speed) {
   Serial.println("Backward");
-  speed = map(speed,113,0,0,255);
+  speed = map(speed,123,255,100,255); 
   digitalWrite(MOTOR_DIR_L, LOW);
   digitalWrite(MOTOR_DIR_R, LOW);
   ledcWrite(pwmChannelL, speed);
@@ -182,7 +188,8 @@ void backward(int speed) {
 
 void left(int speed) {
   Serial.println("Left");
-  speed = map(speed,113,0,0,255);
+ 
+  speed = map(speed,123,255,0,200);
   digitalWrite(MOTOR_DIR_L, LOW);
   digitalWrite(MOTOR_DIR_R, HIGH);
   ledcWrite(pwmChannelL, speed);
@@ -191,7 +198,7 @@ void left(int speed) {
 
 void right(int speed) {
   Serial.println("Right");
-  speed = map(speed,123,255,0,255);
+   speed = map(speed,113,0,0,200);
   digitalWrite(MOTOR_DIR_L, HIGH);
   digitalWrite(MOTOR_DIR_R, LOW);
   ledcWrite(pwmChannelL, speed);
@@ -246,8 +253,8 @@ void printJoysticksData(byte x1, byte y1, byte sw1, byte x2, byte y2, byte sw2){
 
 void servo_init(){
 // Allow allocation of all timers
-    ESP32PWM::allocateTimer(0);
-    ESP32PWM::allocateTimer(1);
+    // ESP32PWM::allocateTimer(0);
+    // ESP32PWM::allocateTimer(1);
     ESP32PWM::allocateTimer(2);
     ESP32PWM::allocateTimer(3);
   base.setPeriodHertz(50);// Standard 50hz servo
