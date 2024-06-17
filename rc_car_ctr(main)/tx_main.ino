@@ -45,7 +45,7 @@ void setup() {
 
   pinMode(JOYSTICK1_X_PIN, INPUT);
   pinMode(JOYSTICK1_Y_PIN, INPUT);
-  pinMode(JOYSTICK1_SWITCH_PIN, INPUT_PULLUP);
+  pinMode(JOYSTICK1_SWITCH_PIN, INPUT);
   pinMode(JOYSTICK2_X_PIN, INPUT);
   pinMode(JOYSTICK2_Y_PIN, INPUT);
   pinMode(JOYSTICK2_SWITCH_PIN, INPUT_PULLUP);
@@ -60,7 +60,7 @@ void loop() {
   // Read joystick 2 values
   int rawX2 = analogRead(JOYSTICK2_X_PIN);
   int rawY2 = analogRead(JOYSTICK2_Y_PIN);
-  byte rawSW2 = digitalRead(JOYSTICK2_SWITCH_PIN);
+  byte rawSW2 = not digitalRead(JOYSTICK2_SWITCH_PIN) ;
 
   // Map values from 0-4095 to 0-255 joystick 1
   joysticks.joystick1Data[0] = map(rawX1, 0, 4095, 0, 255);
@@ -138,7 +138,6 @@ void printJoysticksData(){
   Serial.print(" , ");
   Serial.println(joysticks.joystick2Data[1]);
 }
-
 
 
 
