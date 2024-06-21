@@ -11,8 +11,10 @@
 
 RF24 radio(4, 5); // (CE, CSN)
 
-byte engineJoystickData[2]; // Array to hold X and Y values for the engines
-byte servoJoystickData[2]; // Array to hold X and Y values for servo
+struct { // this has to be a struct! and the transmission arrays have to have same length as receiver ones
+byte engineJoystickData[3]; // Array to hold X and Y values for the engines
+byte servoJoystickData[3]; // Array to hold X and Y values for servo
+} joysticks;
 
 #define MOTOR_DIR_L 13
 #define MOTOR_PWM_L 12
@@ -79,13 +81,13 @@ void loop() {
         radio.read(&engineJoystickData, sizeof(engineJoystickData));
         radio.read(&servoJoystickData, sizeof(servoJoystickData));
 
-        byte x1 = engineJoystickData[0];
-        byte y1 = engineJoystickData[1];
-        byte sw1 = engineJoystickData[2]; // switch joystick 1
+        byte x1 = joysticks.engineJoystickData[0];
+        byte y1 = joysticks.engineJoystickData[1];
+        byte sw1 = joysticks.engineJoystickData[2]; // switch joystick 1
 
-        byte x2 = servoJoystickData[0]; 
-        byte y2 = servoJoystickData[1]; 
-        byte sw2 = servoJoystickData[2]; // switch joystick 2
+        byte x2 = joysticks.servoJoystickData[0]; 
+        byte y2 = joysticks.servoJoystickData[1]; 
+        byte sw2 = joysticks.servoJoystickData[2]; // switch joystick 2
         //printJoysticksData(x1, y1, sw1, x2, y2, sw2);
         handleJoystickInput(x1, y1);
         handleServoJoystick(x2, y2, sw2);
