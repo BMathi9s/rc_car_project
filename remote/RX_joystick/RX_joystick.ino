@@ -29,8 +29,9 @@ const int resolution = 8;     // 8-bit resolution (0-255)
 
 #define MAX_SPEED 255
 
-const byte deadZoneMin = 98; // 118 - 20
-const byte deadZoneMax = 138; // 118 + 20
+const byte centerValue=118;
+const byte deadZoneMin = centerValue-20; // 118 - 20
+const byte deadZoneMax = centerValue+20; // 118 + 20
 
 // servo motors
 Servo head; // (x)
@@ -164,8 +165,6 @@ void servo_init(){
 }
 
 void handleServoJoystick(byte x, byte y) {
-    const byte deadZoneMin = 128 - 20;
-    const byte deadZoneMax = 128 + 20;
 
     if (x >= deadZoneMin && x <= deadZoneMax && y >= deadZoneMin && y <= deadZoneMax) {
         // do nothing
