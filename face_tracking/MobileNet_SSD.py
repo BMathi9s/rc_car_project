@@ -15,6 +15,10 @@ with open("MobileNet_V1_SSD_Model\coco_ssd_mobilenet_v1_1.0_quant_2018_06_29\lab
 
 cap = cv2.VideoCapture(0)
 
+# cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
+# cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
+cap.set(cv2.CAP_PROP_FPS, 15)  # Set lower FPS for less CPU load
+
 if not cap.isOpened():
     print("Error: Could not open video.")
     exit()
@@ -41,7 +45,7 @@ while True:
     # Process and display the results.
     height, width, _ = frame.shape
     for i in range(len(scores)):
-        if scores[i] > 0.5:  # Confidence threshold.
+        if scores[i] > 0.6:  # Confidence threshold.
             ymin, xmin, ymax, xmax = boxes[i]
             xmin = int(xmin * width)
             xmax = int(xmax * width)
