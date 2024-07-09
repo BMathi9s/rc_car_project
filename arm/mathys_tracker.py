@@ -100,8 +100,8 @@ def main():
                 x, y, w, h = track_window
                 center_x = x + w // 2
                 center_y = y + h // 2
-                center_dist_x = abs(center_x - frame_center[0])
-                center_dist_y = abs(center_y - frame_center[1])
+                center_dist_x = center_x - frame_center[0]
+                center_dist_y = center_y - frame_center[1]
 
                 # Only update turret if difference is significant
                 if abs(center_dist_x) > 10 or abs(center_dist_y) > 10:
