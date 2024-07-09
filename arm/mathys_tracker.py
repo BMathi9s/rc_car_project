@@ -106,7 +106,7 @@ def main():
                 # Only update turret if difference is significant
                 if abs(center_dist_x) > 10 or abs(center_dist_y) > 10:
                     # Update turret position
-                    turret.update(center_dist_x,-center_dist_y)
+                    turret.update(-center_dist_x,-center_dist_y)
 
                 # print(f"Face center coordinates: X={center_dist_x}, Y={center_dist_y}")
 
