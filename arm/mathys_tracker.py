@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import time
+from turret import Turret
 
 def safe_cascade_load():
     try:
@@ -48,6 +49,11 @@ def main():
     current_target = None
     last_detection_time = time.time()
     frame_count = 0
+
+    # Initialize the turret
+    turret = Turret(base_channel=0, canon_channel=1)
+    turret.set_proportionnal_constant(constant=0.05)  # Set the proportional constant
+    turret.set_damping_factor(damping_factor=0.5)  # Set the damping factor
 
     while True:
         try:
@@ -98,11 +104,16 @@ def main():
                 center_dist_x = abs(center_x - frame_center[0])
                 center_dist_y = abs(center_y - frame_center[1])
 
-                print(f"Face center coordinates: X={center_dist_x}, Y={center_dist_y}")
+                # Only update turret if difference is significant
+                if abs(center_dist_x) > 10 or abs(center_dist_y) > 10:
+                    # Update turret position
+                    turret.update(center_dist_x, center_dist_y)
+
+                # print(f"Face center coordinates: X={center_dist_x}, Y={center_dist_y}")
 
                 # Draw rectangle around the face (comment out for deployment)
-                cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
-                cv2.circle(frame, (center_x, center_y), 3, (0, 0, 255), -1)
+                # cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
+                # cv2.circle(frame, (center_x, center_y), 3, (0, 0, 255), -1)
             else:
                 # Reset tracker if no face is detected for more than 5 seconds
                 if time.time() - last_detection_time > 5:
@@ -111,7 +122,7 @@ def main():
                     print("No face detected for 5 seconds, resetting tracker")
 
             # Display the frame (comment out for deployment)
-            cv2.imshow('Face Tracking', frame)
+            # cv2.imshow('Face Tracking', frame)
 
             # Handle key presses (adjust for actual input method on the RC car)
             key = cv2.waitKey(1) & 0xFF
@@ -129,7 +140,7 @@ def main():
 
     if cap is not None:
         cap.release()
-    cv2.destroyAllWindows()
+    # cv2.destroyAllWindows()
 
 if __name__ == "__main__":
     main()
