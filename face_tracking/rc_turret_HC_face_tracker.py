@@ -59,7 +59,7 @@ def main():
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             
             # Detect faces
-            faces = face_cascade.detectMultiScale(gray, scaleFactor=1.02, minNeighbors=1, minSize=(15, 15)) # Can change to scaleFactor=1.15 if performance is too slow. Can even lower to minNeighbors=1 if not many false positives are occuring.
+            faces = face_cascade.detectMultiScale(gray, scaleFactor=1.05, minNeighbors=3, minSize=(15, 15)) # Can change to scaleFactor=1.15 if performance is too slow. Can even lower to minNeighbors=1 if not many false positives are occuring.
 
             if len(faces) > 0:
                 last_detection_time = time.time()
