@@ -54,16 +54,16 @@ def main():
                 if cap is None:
                     break
                 continue
-
+            
             frame_center = (frame.shape[1] // 2, frame.shape[0] // 2)
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             
             # Detect faces
-            faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+            faces = face_cascade.detectMultiScale(gray, scaleFactor=1.02, minNeighbors=1, minSize=(15, 15)) # Can change to scaleFactor=1.15 if performance is too slow. Can even lower to minNeighbors=1 if not many false positives are occuring.
 
             if len(faces) > 0:
                 last_detection_time = time.time()
-                # Sort faces by distance to center
+                
                 faces = sorted(faces, key=lambda face: distance_to_center(face, frame_center))
 
                 if current_target is None or current_target >= len(faces):

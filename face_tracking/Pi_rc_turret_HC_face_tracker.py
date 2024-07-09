@@ -68,7 +68,7 @@ def main():
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             
             # Detect faces
-            faces = face_cascade.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=5, minSize=(30, 30))
+            faces = face_cascade.detectMultiScale(gray, scaleFactor=1.02, minNeighbors=1, minSize=(15, 15)) # Can change to scaleFactor=1.15 if performance is too slow. Can even lower to minNeighbors=1 if not many false positives are occuring.
 
             if len(faces) > 0:
                 last_detection_time = time.time()
@@ -92,17 +92,15 @@ def main():
                         face_tracker = None
                         continue
 
-                # Get the center of the face
                 x, y, w, h = track_window
                 center_x = x + w // 2
                 center_y = y + h // 2
 
-                # Output the coordinates
                 print(f"Face center coordinates: X={center_x}, Y={center_y}")
 
                 # Draw rectangle around the face (comment out for deployment)
-                # cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
-                # cv2.circle(frame, (center_x, center_y), 3, (0, 0, 255), -1)
+                cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
+                cv2.circle(frame, (center_x, center_y), 3, (0, 0, 255), -1)
             else:
                 # Reset tracker if no face is detected for more than 5 seconds
                 if time.time() - last_detection_time > 5:
@@ -111,7 +109,7 @@ def main():
                     print("No face detected for 5 seconds, resetting tracker")
 
             # Display the frame (comment out for deployment)
-            # cv2.imshow('Face Tracking', frame)
+            cv2.imshow('Face Tracking', frame)
 
             # Handle key presses (adjust for actual input method on the RC car)
             key = cv2.waitKey(1) & 0xFF
