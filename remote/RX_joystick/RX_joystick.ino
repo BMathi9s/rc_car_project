@@ -32,8 +32,8 @@ const int resolution = 8;     // 8-bit resolution (0-255)
 
 #define MAX_SPEED 255
 
-const byte deadZoneMin = 98; // 118 - 20
-const byte deadZoneMax = 138; // 118 + 20
+const byte deadZoneMin = 118-15; // 118 - 20
+const byte deadZoneMax = 118+15; // 118 + 20
 
 // servo motors
 Servo head; // (x)
@@ -107,7 +107,7 @@ void handleJoystickInput(byte x, byte y) {
         return;
     }
 
-    int mappedX = map(x, 0, MAX_SPEED, -MAX_SPEED, MAX_SPEED);
+    int mappedX = map(x, 0, MAX_SPEED, -MAX_SPEED, MAX_SPEED); // 0-255 -> -255 to 255
     int mappedY = map(y, 0, MAX_SPEED, -MAX_SPEED, MAX_SPEED);
 
     float speedL, speedR;
