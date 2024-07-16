@@ -5,13 +5,16 @@
 #include <ESP32Servo.h> 
 //esp32servo by kevin 
 // only work by using version 1.2.1!!
-#define BASESERVO_PIN 26      // GPIO pin used to connect the servo control (digital out)
-#define HEADSERVO_PIN 33
+#define BASESERVO_PIN 25      // GPIO pin used to connect the servo control (digital out)
+#define HEADSERVO_PIN 26
+#define turretinc 2 
 
 RF24 radio(4, 5); // (CE, CSN)
 
-byte engineJoystickData[2]; // Array to hold X and Y values for the engines
-byte servoJoystickData[2]; // Array to hold X and Y values for servo
+struct { // this has to be a struct! and the transmission arrays have to have same length as receiver ones
+byte engineJoystickData[3]; // Array to hold X and Y values for the engines
+byte servoJoystickData[3]; // Array to hold X and Y values for servo
+} joysticks;
 
 #define MOTOR_DIR_L 13
 #define MOTOR_PWM_L 12
@@ -29,17 +32,20 @@ const int resolution = 8;     // 8-bit resolution (0-255)
 
 #define MAX_SPEED 255
 
-const byte centerValue=118;
-const byte deadZoneMin = centerValue-20; // 118 - 20
-const byte deadZoneMax = centerValue+20; // 118 + 20
+const byte deadZoneMin = 118-15; // 118 - 20
+const byte deadZoneMax = 118+15; // 118 + 20
 
 // servo motors
 Servo head; // (x)
 Servo base; // (y)
-
 // initialize 
-int xShift = 90;
-int yShift = 90;
+int xShift = 120;
+int yShift = 120;
+int midpointhead = 100;
+int midpointbase = 140;
+
+// Declare speedL and speedR as global variables
+float speedL, speedR;
 
 void setup() {
     Serial.begin(9600); // Begin Serial communication
@@ -75,22 +81,18 @@ void setup() {
 
 void loop() {
     if (radio.available()) {
-        radio.read(&engineJoystickData, sizeof(engineJoystickData));
-        radio.read(&servoJoystickData, sizeof(servoJoystickData));
+        radio.read(&joysticks, sizeof(joysticks));
 
-        byte x1 = engineJoystickData[0];
-        byte y1 = engineJoystickData[1];
+        byte x1 = joysticks.engineJoystickData[0];
+        byte y1 = joysticks.engineJoystickData[1];
+        byte sw1 = joysticks.engineJoystickData[2]; // switch joystick 1
 
-        byte x2 = servoJoystickData[0]; 
-        byte y2 = servoJoystickData[1]; 
-
-        Serial.print("Joystick1 X: ");
-        Serial.print(x1);
-        Serial.print(" | Joystick1 Y: ");
-        Serial.println(y1);
-
+        byte x2 = joysticks.servoJoystickData[0]; 
+        byte y2 = joysticks.servoJoystickData[1]; 
+        byte sw2 = joysticks.servoJoystickData[2]; // switch joystick 2
+        //printJoysticksData(x1, y1, sw1, x2, y2, sw2);
         handleJoystickInput(x1, y1);
-        handleServoJoystick(x2, y2);
+        handleServoJoystick(x2, y2, sw2);
 
         lastReceiveTime = millis();
     }
@@ -107,12 +109,10 @@ void handleJoystickInput(byte x, byte y) {
         return;
     }
 
-    int mappedX = map(x, 0, MAX_SPEED, -MAX_SPEED, MAX_SPEED);
+    int mappedX = map(x, 0, MAX_SPEED, -MAX_SPEED, MAX_SPEED); // 0-255 -> -255 to 255
     int mappedY = map(y, 0, MAX_SPEED, -MAX_SPEED, MAX_SPEED);
 
-    float speedL, speedR;
-
-    calculateMotorSpeeds(mappedX, mappedY, speedL, speedR);
+    calculateMotorSpeeds(mappedX, mappedY);
 
     // Ensure speeds are within bounds
     int motorSpeedL = constrain(speedL, -MAX_SPEED, MAX_SPEED);
@@ -122,23 +122,46 @@ void handleJoystickInput(byte x, byte y) {
     setMotorSpeed(motorSpeedL, MOTOR_DIR_L, MOTOR_PWM_L);
     setMotorSpeed(motorSpeedR, MOTOR_DIR_R, MOTOR_PWM_R);
 
-    Serial.print("Motor Speed L: ");
-    Serial.print(motorSpeedL);
-    Serial.print(" | Motor Speed R: ");
-    Serial.println(motorSpeedR);
+    // Print speeds for debugging
+    Serial.print("MappedX: ");
+    Serial.print(mappedX);
+
+    Serial.print(" MappedY: ");
+    Serial.println(mappedY);
+
+    Serial.print("SpeedL: ");
+    Serial.print(speedL);
+    Serial.print(" DirectionL: ");
+    Serial.println(speedL > 0 ? "Forward" : "Backward");
+
+    Serial.print("SpeedR: ");
+    Serial.print(speedR);
+    Serial.print(" DirectionR: ");
+    Serial.println(speedR > 0 ? "Forward" : "Backward");
 }
 
-// Function to calculate motor speeds based on joystick inputs
-void calculateMotorSpeeds(float mappedX, float mappedY, float &speedL, float &speedR) {
-    // Diagonal Movement
-    float turnFactor = ((abs(mappedY) / (float)MAX_SPEED)) * (abs(mappedX) / (float)MAX_SPEED);
-
-    speedL = mappedY + (turnFactor * mappedX);
-    speedR = mappedY - (turnFactor * mappedX);
+// To determine the sign of some variable
+int sgn(float val) {
+    return (0 < val) - (val < 0);
 }
 
-float exponentialDecay(float input, float decayRate) {
-    return input * exp(-decayRate * abs(input));
+// Calculate motor speeds based on input
+void calculateMotorSpeeds(float mappedX, float mappedY) {
+    
+    float normalizedX = mappedX / MAX_SPEED; 
+    float normalizedY = mappedY / MAX_SPEED;
+    
+    // Calculate magnitude and ensure it does not exceed 1.0
+    float magnitude = fmin(sqrt(normalizedX * normalizedX + normalizedY * normalizedY), 1.0f);
+    float turnFactor = pow(fabs(normalizedX), 1.5) * (1 - fabs(normalizedY));
+    
+    // Calculate speed while taking into acount the turn
+    speedR = normalizedY - turnFactor * sgn(normalizedX);  
+    speedL = normalizedY + turnFactor * sgn(normalizedX);  
+    
+    // Scale by the magnitude of the vector
+    speedL *= MAX_SPEED * magnitude;  
+    speedR *= MAX_SPEED * magnitude; 
 }
 
 // Set motor speed and direction
@@ -152,43 +175,38 @@ void setMotorSpeed(int speed, int dirPin, int pwmPin) {
     analogWrite(pwmPin, speed);
 }
 
-void servo_init(){
-    // Allow allocation of all timers
-    ESP32PWM::allocateTimer(0);
-    ESP32PWM::allocateTimer(1);
-    ESP32PWM::allocateTimer(2);
-    ESP32PWM::allocateTimer(3);
-    base.setPeriodHertz(50); // Standard 50hz servo
-    base.attach(BASESERVO_PIN, 500, 2400);
-    head.setPeriodHertz(50);
-    head.attach(HEADSERVO_PIN, 500, 2400); 
-}
 
-void handleServoJoystick(byte x, byte y) {
 
-    if (x >= deadZoneMin && x <= deadZoneMax && y >= deadZoneMin && y <= deadZoneMax) {
-        // do nothing
-    } else {
-        if (x > deadZoneMax) {
-            if (xShift <= 180)
-                xShift++;
-        }
-        if (x < deadZoneMin) {
-            if (xShift >= 0)
-                xShift--;
-        }
-        if (y > deadZoneMax) {
-            if (yShift <= 180)
-                yShift++;
-        }
-        if (y < deadZoneMin) {
-            if (yShift >= 0)
-                yShift--;
-        }
-    }
+// Handle joystick for servo (camera) movement
+void handleServoJoystick(byte x, byte y, byte sw){
+  const byte deadZoneMin = 118 - 20;
+  const byte deadZoneMax = 118 + 20;
 
-    head.write(xShift);
-    base.write(yShift);
+  if(sw == HIGH){ // if joystick is pressed (switch)
+    xShift = midpointbase;  // reset angles
+    yShift = midpointhead;
+  } else if(x >= deadZoneMin && x <= deadZoneMax && y >= deadZoneMin && y <= deadZoneMax){
+    // do nothing
+  } 
+  if (x > deadZoneMax){
+      if(xShift <= 180)
+        xShift += turretinc;
+  } 
+  if (x < deadZoneMin){
+      if(xShift >= 0)
+        xShift -= turretinc;
+  } 
+  if (y > deadZoneMax){
+          if(yShift <= 180)
+        yShift += turretinc;
+  } 
+  if (y < deadZoneMin){
+      if(yShift >= 0)
+        yShift -= turretinc;
+  }
+
+  head.write(xShift);
+  base.write(yShift);
 }
 
 // Stop the motors
@@ -224,4 +242,32 @@ void resetReception() {
     radio.startListening(); // set receiver mode
 
     Serial.println("Reception reset");
+}
+
+
+void servo_init(){
+// Allow allocation of all timers
+    // ESP32PWM::allocateTimer(0);
+    // ESP32PWM::allocateTimer(1);
+    ESP32PWM::allocateTimer(2);
+    ESP32PWM::allocateTimer(3);
+  base.setPeriodHertz(50);// Standard 50hz servo
+  base.attach(BASESERVO_PIN, 500, 2400);
+  head.setPeriodHertz(50);
+  head.attach(HEADSERVO_PIN, 500, 2400); 
+
+}
+void printJoysticksData(byte x1, byte y1, byte sw1, byte x2, byte y2, byte sw2){
+  Serial.print("Joystick 1: ");
+  Serial.print(x1);
+  Serial.print(" , ");
+  Serial.print(y1);
+  Serial.print(" , ");
+  Serial.println(sw1);  
+  Serial.print("Joystick 2: ");
+  Serial.print(x2);
+  Serial.print(" , ");
+  Serial.print(y2);
+  Serial.print(" , ");
+  Serial.println(sw2);
 }
