@@ -44,6 +44,9 @@ int yShift = 120;
 int midpointhead = 100;
 int midpointbase = 140;
 
+// Declare speedL and speedR as global variables
+float speedL, speedR;
+
 void setup() {
     Serial.begin(9600); // Begin Serial communication
 
@@ -78,8 +81,7 @@ void setup() {
 
 void loop() {
     if (radio.available()) {
-        radio.read(&engineJoystickData, sizeof(engineJoystickData));
-        radio.read(&servoJoystickData, sizeof(servoJoystickData));
+        radio.read(&joysticks, sizeof(joysticks));
 
         byte x1 = joysticks.engineJoystickData[0];
         byte y1 = joysticks.engineJoystickData[1];
@@ -110,9 +112,7 @@ void handleJoystickInput(byte x, byte y) {
     int mappedX = map(x, 0, MAX_SPEED, -MAX_SPEED, MAX_SPEED); // 0-255 -> -255 to 255
     int mappedY = map(y, 0, MAX_SPEED, -MAX_SPEED, MAX_SPEED);
 
-    float speedL, speedR;
-
-    calculateMotorSpeeds(mappedX, mappedY, speedL, speedR);
+    calculateMotorSpeeds(mappedX, mappedY);
 
     // Ensure speeds are within bounds
     int motorSpeedL = constrain(speedL, -MAX_SPEED, MAX_SPEED);
@@ -122,23 +122,46 @@ void handleJoystickInput(byte x, byte y) {
     setMotorSpeed(motorSpeedL, MOTOR_DIR_L, MOTOR_PWM_L);
     setMotorSpeed(motorSpeedR, MOTOR_DIR_R, MOTOR_PWM_R);
 
-    Serial.print("Motor Speed L: ");
-    Serial.print(motorSpeedL);
-    Serial.print(" | Motor Speed R: ");
-    Serial.println(motorSpeedR);
+    // Print speeds for debugging
+    Serial.print("MappedX: ");
+    Serial.print(mappedX);
+
+    Serial.print(" MappedY: ");
+    Serial.println(mappedY);
+
+    Serial.print("SpeedL: ");
+    Serial.print(speedL);
+    Serial.print(" DirectionL: ");
+    Serial.println(speedL > 0 ? "Forward" : "Backward");
+
+    Serial.print("SpeedR: ");
+    Serial.print(speedR);
+    Serial.print(" DirectionR: ");
+    Serial.println(speedR > 0 ? "Forward" : "Backward");
 }
 
-// Function to calculate motor speeds based on joystick inputs
-void calculateMotorSpeeds(float mappedX, float mappedY, float &speedL, float &speedR) {
-    // Diagonal Movement
-    float turnFactor = ((abs(mappedY) / (float)MAX_SPEED)) * (abs(mappedX) / (float)MAX_SPEED);
-
-    speedL = mappedY + (turnFactor * mappedX);
-    speedR = mappedY - (turnFactor * mappedX);
+// To determine the sign of some variable
+int sgn(float val) {
+    return (0 < val) - (val < 0);
 }
 
-float exponentialDecay(float input, float decayRate) {
-    return input * exp(-decayRate * abs(input));
+// Calculate motor speeds based on input
+void calculateMotorSpeeds(float mappedX, float mappedY) {
+    
+    float normalizedX = mappedX / MAX_SPEED; 
+    float normalizedY = mappedY / MAX_SPEED;
+    
+    // Calculate magnitude and ensure it does not exceed 1.0
+    float magnitude = fmin(sqrt(normalizedX * normalizedX + normalizedY * normalizedY), 1.0f);
+    float turnFactor = pow(fabs(normalizedX), 1.5) * (1 - fabs(normalizedY));
+    
+    // Calculate speed while taking into acount the turn
+    speedR = normalizedY - turnFactor * sgn(normalizedX);  
+    speedL = normalizedY + turnFactor * sgn(normalizedX);  
+    
+    // Scale by the magnitude of the vector
+    speedL *= MAX_SPEED * magnitude;  
+    speedR *= MAX_SPEED * magnitude; 
 }
 
 // Set motor speed and direction
