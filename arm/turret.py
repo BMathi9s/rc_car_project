@@ -20,7 +20,17 @@ class Turret:
     def set_damping_factor(self, damping_factor):
         self.damping_factor = damping_factor
 
-    def update(self, x_diff, y_diff):
+        
+        
+    def update_abs(self, x_diff, y_diff): 
+        #take in values from 0 to 1
+        
+        
+        
+        
+        
+      def update(self, x_diff, y_diff):
+        # take value of pixels
         # Invert the direction of the adjustments if necessary
         base_change = -x_diff * self.prop_const  # Use the proportional constant
         canon_change = -y_diff * self.prop_const  # Use the proportional constant
