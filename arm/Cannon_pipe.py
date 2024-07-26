@@ -59,13 +59,13 @@ while cap.isOpened():
             print(f'dif x: {face_diff_x}')
             print(f'dif y: {face_diff_y}')
             
-        
+            lowerlimit, highlimit = 0.45, 0.55
             
-            if 0.45 <= nose.x <= 0.55 and 0.45 <= nose.y <= 0.65:
+            if lowerlimit <= nose.x <=  highlimit and lowerlimit <= nose.y <= highlimit:
                 pass  # Do nothing to avoid overshoot
-            elif 0.45 <= nose.x <= 0.55 and not 0.45 <= nose.y <= 0.65:
-                cannon.track_face(nose.x, 0.5)
-            elif (not 0.45 <= nose.x <= 0.55) and 0.45 <= nose.y <= 0.65:
+            elif lowerlimit <= nose.x <= highlimit and not lowerlimit <= nose.y <= highlimit:
+                cannon.track_face(nose.x, highlimit)
+            elif (not lowerlimit <= nose.x <= highlimit) and lowerlimit <= nose.y <= highlimit:
                 cannon.track_face(0.5,nose.y)
             else:
                 cannon.track_face(nose.x, nose.y)  # Adjust servos to track the face
@@ -73,15 +73,6 @@ while cap.isOpened():
             
             
             
-            if 0.45 <= nose.x <= 0.55 and not (0.45 <= nose.y <= 0.65):
-                cannon.track_face(nose.x, 0.5)  # Only adjust x, set y to 0.5
-            elif not (0.45 <= nose.x <= 0.55) and 0.45 <= nose.y <= 0.65:
-                cannon.track_face(0.5, nose.y)  # Only adjust y, set x to 0.5
-            elif not (0.45 <= nose.x <= 0.55) and not (0.45 <= nose.y <= 0.65):
-                cannon.track_face(nose.x, nose.y)  # Adjust both x and y
-            else:
-                # Both x and y are within the range, do nothing to avoid overshoot
-                pass
         # Display the frame
         cv2.imshow('MediaPipe Pose', image)
 
