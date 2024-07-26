@@ -24,7 +24,7 @@ center_of_screen = 0.5
 #ini cannon
 cannon = Marshmellow_Cannon(base_channel=0, cannon_channel=1)
 cannon.center()
-cannon.set_camera_scope(20)
+cannon.set_camera_scope(10)
 
 while cap.isOpened():
     time_elapsed = time.time() - prev_time
