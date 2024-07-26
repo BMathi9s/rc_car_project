@@ -59,7 +59,7 @@ while cap.isOpened():
             print(f'dif x: {face_diff_x}')
             print(f'dif y: {face_diff_y}')
             
-            cannon.track_face(nose.x, nose.y)  # Adjust servos to track the face
+            #cannon.track_face(nose.x, nose.y)  # Adjust servos to track the face
 
         # Display the frame
         cv2.imshow('MediaPipe Pose', image)
