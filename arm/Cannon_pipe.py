@@ -59,7 +59,7 @@ while cap.isOpened():
             print(f'dif x: {face_diff_x}')
             print(f'dif y: {face_diff_y}')
             
-            lowerlimit, highlimit = 0.45, 0.55
+            lowerlimit, highlimit = 0.5, 0.6
             
             if lowerlimit <= nose.x <=  highlimit and lowerlimit <= nose.y <= highlimit:
                 pass  # Do nothing to avoid overshoot
