@@ -24,7 +24,7 @@ center_of_screen = 0.5
 #ini cannon
 cannon = Marshmellow_Cannon(base_channel=0, cannon_channel=1)
 cannon.center()
-cannon.set_camera_scope(6)
+cannon.set_camera_scope(10)
 
 while cap.isOpened():
     time_elapsed = time.time() - prev_time
@@ -59,8 +59,8 @@ while cap.isOpened():
             print(f'dif x: {face_diff_x}')
             print(f'dif y: {face_diff_y}')
             
-            #if 0.4 >= nose.x >= 0.6 and 0.4 >= nose.y >= 0.6:
-            cannon.track_face(nose.x, nose.y)  # Adjust servos to track the face
+            if 0.4 >= nose.x >= 0.6 and 0.4 >= nose.y >= 0.6:
+             cannon.track_face(nose.x, nose.y)  # Adjust servos to track the face
 
         # Display the frame
         cv2.imshow('MediaPipe Pose', image)
