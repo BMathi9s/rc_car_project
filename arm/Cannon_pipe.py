@@ -59,8 +59,12 @@ while cap.isOpened():
             print(f'dif x: {face_diff_x}')
             print(f'dif y: {face_diff_y}')
             
-            if 0.4 >= nose.x >= 0.6 and 0.4 >= nose.y >= 0.6:
-             cannon.track_face(nose.x, nose.y)  # Adjust servos to track the face
+        
+            
+            if 0.4 <= nose.x <= 0.6 and 0.4 <= nose.y <= 0.6:
+                pass  # Do nothing if within range
+            else:
+                cannon.track_face(nose.x, nose.y)  # Adjust servos to track the face
 
         # Display the frame
         cv2.imshow('MediaPipe Pose', image)
