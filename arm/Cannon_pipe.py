@@ -61,11 +61,27 @@ while cap.isOpened():
             
         
             
-            if 0.4 <= nose.x <= 0.6 and 0.4 <= nose.y <= 0.6:
+            if 0.45 <= nose.x <= 0.55 and 0.45 <= nose.y <= 0.65:
                 pass  # Do nothing to avoid overshoot
+            elif 0.45 <= nose.x <= 0.55 and not 0.45 <= nose.y <= 0.65:
+                cannon.track_face(nose.x, 0.5)
+            elif (not 0.45 <= nose.x <= 0.55) and 0.45 <= nose.y <= 0.65:
+                cannon.track_face(0.5,nose.y)
             else:
                 cannon.track_face(nose.x, nose.y)  # Adjust servos to track the face
-
+            # Check conditions and call cannon.track_face accordingly
+            
+            
+            
+            if 0.45 <= nose.x <= 0.55 and not (0.45 <= nose.y <= 0.65):
+                cannon.track_face(nose.x, 0.5)  # Only adjust x, set y to 0.5
+            elif not (0.45 <= nose.x <= 0.55) and 0.45 <= nose.y <= 0.65:
+                cannon.track_face(0.5, nose.y)  # Only adjust y, set x to 0.5
+            elif not (0.45 <= nose.x <= 0.55) and not (0.45 <= nose.y <= 0.65):
+                cannon.track_face(nose.x, nose.y)  # Adjust both x and y
+            else:
+                # Both x and y are within the range, do nothing to avoid overshoot
+                pass
         # Display the frame
         cv2.imshow('MediaPipe Pose', image)
 
