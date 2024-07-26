@@ -1,7 +1,10 @@
 import cv2
 import mediapipe as mp
 import time
-from arm.Marshmellow_Cannon import Turret
+
+from Marshmellow_Cannon import Marshmellow_Cannon
+# Example usage
+
 
 # Initialize MediaPipe Pose
 mp_pose = mp.solutions.pose
@@ -18,9 +21,10 @@ fps_limit = 30
 prev_time = 0
 center_of_screen = 0.5
 
-# Initialize the turret
-turret = Turret(base_channel=0, canon_channel=1)
-
+#ini cannon
+cannon = Marshmellow_Cannon(base_channel=0, cannon_channel=1)
+cannon.center()
+cannon.set_camera_scope(180)
 
 while cap.isOpened():
     time_elapsed = time.time() - prev_time
@@ -55,7 +59,7 @@ while cap.isOpened():
             print(f'dif x: {face_diff_x}')
             print(f'dif y: {face_diff_y}')
             
-            turret.update_abs(nose.x , nose.y)
+            cannon.track_face(nose.x, nose.y)  # Adjust servos to track the face
 
         # Display the frame
         cv2.imshow('MediaPipe Pose', image)
