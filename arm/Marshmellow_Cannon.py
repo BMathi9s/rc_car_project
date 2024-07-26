@@ -1,7 +1,7 @@
 from adafruit_servokit import ServoKit
 
 class Marshmellow_Cannon:
-    def __init__(self, base_channel, cannon_channel, base_angle=90, cannon_angle=45):
+    def __init__(self, base_channel, cannon_channel, base_angle=90, cannon_angle=90):
         self.kit = ServoKit(channels=16)
         self.base_channel = base_channel
         self.cannon_channel = cannon_channel
@@ -25,7 +25,7 @@ class Marshmellow_Cannon:
 
     def center(self):
         #Center the servos at 90 degrees.
-        self.set_angles(90, 45)
+        self.set_angles(90, 135)
 
     def track_face(self, x, y):
         #Adjust the servos based on the normalized x and y coordinates of the detected face.
