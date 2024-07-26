@@ -30,7 +30,7 @@ class Marshmellow_Cannon:
     def track_face(self, x, y):
         #Adjust the servos based on the normalized x and y coordinates of the detected face.
         # Calculate the difference from the center
-        x_diff = x - 0.5 
+        x_diff = 0.5 - x
         y_diff = y - 0.5
 
         # Calculate the new angles based on the difference
