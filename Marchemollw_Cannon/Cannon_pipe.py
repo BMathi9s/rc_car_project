@@ -55,24 +55,19 @@ while cap.isOpened():
             deltax = size2.x - size1.x
             
             print(f'Nose coordinates: {nose}')
-             # Update turret position
-            face_diff_x = nose.x - center_of_screen
-            face_diff_y = nose.y - center_of_screen
+      
             
-            print(f'dif x: {face_diff_x}')
-            print(f'dif y: {face_diff_y}')
-
-            
-            lowerlimit, highlimit = 0.499, 0.501
+            print(f'dif x: {deltax}')
+            lowerlimit, highlimit = 0.49, 0.51
             
             if lowerlimit <= nose.x <=  highlimit and lowerlimit <= nose.y <= highlimit:
                 pass  # Do nothing to avoid overshoot
             elif lowerlimit <= nose.x <= highlimit and not lowerlimit <= nose.y <= highlimit:
-                cannon.track_face(nose.x, highlimit)
+                cannon.track_face(nose.x, 0.5,deltax)
             elif (not lowerlimit <= nose.x <= highlimit) and lowerlimit <= nose.y <= highlimit:
-                cannon.track_face(0.5,nose.y)
+                cannon.track_face(0.5,nose.y,deltax)
             else:
-                cannon.track_face(nose.x, nose.y,deltax)  # Adjust servos to track the face
+                cannon.track_face(nose.x, nose.y, deltax)  # Adjust servos to track the face
             # Check conditions and call cannon.track_face accordingly
             
             
