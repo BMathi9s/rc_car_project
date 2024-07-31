@@ -5,10 +5,17 @@ from ultralytics import YOLO
 from supervision import Detections
 from PIL import Image
 import numpy as np
-from turret import Turret
+from arm.RnD_stuff.turret import Turret
 
 
 def main():
+    # download model
+    # model_path = hf_hub_download(repo_id="arnabdhar/YOLOv8-Face-Detection", filename="model.pt")
+    
+    # load model
+    # model = YOLO(model_path)
+    # Open the default camera (usually the first one)
+    
     local_model_path = "models--arnabdhar--YOLOv8-Face-Detection/snapshots/52fa54977207fa4f021de949b515fb19dcab4488/model.pt"
     
     # Check if the local model file exists
@@ -29,7 +36,7 @@ def main():
     # Initialize the turret
     turret = Turret(base_channel=0, canon_channel=1)
     turret.set_proportionnal_constant(constant=0.05)  # Set the proportional constant
-    turret.set_damping_factor(damping_factor=1)  # Set the damping factor
+    #turret.set_damping_factor(damping_factor=0.5)  # Set the damping factor
     
     while True:
         # Capture frame-by-frame
@@ -72,14 +79,9 @@ def main():
             # cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 0, 255), 2)
             
             # Only update turret if difference is significant
-            if abs(face_diff_x) > 50 or abs(face_diff_y) > 50:
+            if abs(face_diff_x) > 10 or abs(face_diff_y) > 10:
                 # Update turret position
-                turret.set_proportionnal_constant(constant=0.05) 
                 turret.update(face_diff_x, face_diff_y)
-            else :
-                turret.set_proportionnal_constant(constant=0.01) 
-                turret.update(face_diff_x, face_diff_y)
-                
         
         # Display the resulting frame
         # cv2.imshow('Camera', frame)
