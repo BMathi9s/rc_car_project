@@ -50,6 +50,9 @@ while cap.isOpened():
             
             # Get the nose coordinates 
             nose = results.pose_landmarks.landmark[0]
+            size1 = results.pose_landmarks.landmark[1]
+            size2 = results.pose_landmarks.landmark[4]
+            deltax = size2.x - size1.x
             
             print(f'Nose coordinates: {nose}')
              # Update turret position
@@ -58,7 +61,7 @@ while cap.isOpened():
             
             print(f'dif x: {face_diff_x}')
             print(f'dif y: {face_diff_y}')
-            print(f'z vale: {nose.z}')
+
             
             lowerlimit, highlimit = 0.499, 0.501
             
@@ -69,7 +72,7 @@ while cap.isOpened():
             elif (not lowerlimit <= nose.x <= highlimit) and lowerlimit <= nose.y <= highlimit:
                 cannon.track_face(0.5,nose.y)
             else:
-                cannon.track_face(nose.x, nose.y,nose.z)  # Adjust servos to track the face
+                cannon.track_face(nose.x, nose.y,deltax)  # Adjust servos to track the face
             # Check conditions and call cannon.track_face accordingly
             
             

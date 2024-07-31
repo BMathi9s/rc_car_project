@@ -28,12 +28,12 @@ class Marshmellow_Cannon:
         #Center the servos at 90 degrees.
         self.set_angles(90, 135)
 
-    def track_face(self, x, y,z):
+    def track_face(self, x, y,deltax):
         #Adjust the servos based on the normalized x and y coordinates of the detected face.
         # Calculate the difference from the center
         x_diff = x - 0.5 
         y_diff = y - 0.5
-        z_calibrated = z #here we gotta make it usable
+        z_calibrated = deltax
 
         # Calculate the new angles based on the difference
         
