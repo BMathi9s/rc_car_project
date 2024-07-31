@@ -50,8 +50,8 @@ while cap.isOpened():
             
             # Get the nose coordinates 
             nose = results.pose_landmarks.landmark[0]
-            size1 = results.pose_landmarks.landmark[1]
-            size2 = results.pose_landmarks.landmark[4]
+            size1 = results.pose_landmarks.landmark[2]
+            size2 = results.pose_landmarks.landmark[5]
             deltax = size2.x - size1.x
             
             print(f'Nose coordinates: {nose}')
