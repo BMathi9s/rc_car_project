@@ -17,7 +17,7 @@ cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
 # Set frame rate limit
-fps_limit = 30
+fps_limit = 90
 prev_time = 0
 center_of_screen = 0.5
 
