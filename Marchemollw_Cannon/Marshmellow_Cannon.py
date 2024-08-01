@@ -33,13 +33,19 @@ class Marshmellow_Cannon:
         # Calculate the difference from the center
         x_diff = x - 0.5 
         y_diff = y - 0.5
-        z_calibrated = deltax
+        
 
+        if(deltax < 0.2):
+            z_calibrated = 0.2
+        else:
+            z_calibrated = 0.0385 * np.power(deltax,-1.07)
+            
+        znormalised = 0.02
         # Calculate the new angles based on the difference
         
-        base_angle = self.base_angle + np.arcsin((-x_diff)/z_calibrated)
+        base_angle = self.base_angle + -1*np.arcsin((x_diff)/znormalised)
         
-        cannon_angle = self.cannon_angle +  np.arcsin((y_diff)/z_calibrated)
+        cannon_angle = self.cannon_angle +  np.arcsin((y_diff)/znormalised)
         
         #base_angle = self.base_angle + (-x_diff * self.camera_scope)  # Scaling the difference to the servo angle range
         #cannon_angle = self.cannon_angle + (y_diff * self.camera_scope)
