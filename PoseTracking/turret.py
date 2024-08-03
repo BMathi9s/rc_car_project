@@ -1,31 +1,39 @@
-
+# turret.py
 from adafruit_servokit import ServoKit
 
 class Turret:
-    def __init__(self, base_channel, canon_channel, min_angle=0, max_angle=180):
+    def __init__(self, horizontal_channel, vertical_channel, horizontal_fov, vertical_fov, easing_factor=0.1, dead_zone=10):
         self.kit = ServoKit(channels=16)
-        self.base_channel = base_channel
-        self.canon_channel = canon_channel
-        self.min_angle = min_angle
-        self.max_angle = max_angle
-        self.base_angle = (min_angle + max_angle) // 2
-        self.canon_angle = (min_angle + max_angle) // 2
-        self.prop_const = 0.01  # Default proportional constant
+        self.horizontal_channel = horizontal_channel
+        self.vertical_channel = vertical_channel
+        self.horizontal_fov = horizontal_fov
+        self.vertical_fov = vertical_fov
+        self.easing_factor = easing_factor
+        self.dead_zone = dead_zone
 
-        self.kit.servo[self.base_channel].angle = self.base_angle
-        self.kit.servo[self.canon_channel].angle = self.canon_angle
+        # Initial servo positions
+        self.x_servo_pos = 90
+        self.y_servo_pos = 90
 
-    def set_proportionnal_constant(self, constant):
-        self.prop_const = constant
+    def pixel_to_angle(self, pixel, frame_size, fov):
+        center = frame_size / 2
+        return ((pixel - center) / center) * (fov / 2)
 
-    def update(self, x_diff, y_diff):
-        # Invert the direction of the adjustments if necessary
-        base_change = -x_diff * self.prop_const  # Use the proportional constant
-        canon_change = -y_diff * self.prop_const  # Use the proportional constant
+    def update_position(self, x, y, frame_width, frame_height):
+        # Calculate angles relative to the camera's FOV
+        x_angle = self.pixel_to_angle(x, frame_width, self.horizontal_fov)
+        y_angle = self.pixel_to_angle(y, frame_height, self.vertical_fov)
 
-        self.base_angle = max(self.min_angle, min(self.max_angle, self.base_angle + base_change))
-        self.canon_angle = max(self.min_angle, min(self.max_angle, self.canon_angle + canon_change))
+        # Check if the detected point is outside the dead zone
+        if abs(x - frame_width / 2) > self.dead_zone or abs(y - frame_height / 2) > self.dead_zone:
+            # Calculate the target servo positions with easing
+            target_x_servo_pos = self.x_servo_pos + (x_angle * self.easing_factor)
+            target_y_servo_pos = self.y_servo_pos + (y_angle * self.easing_factor)
 
-        self.kit.servo[self.base_channel].angle = self.base_angle
-        self.kit.servo[self.canon_channel].angle = self.canon_angle
-        print(f"turret ctr: base={self.base_angle}, canon={self.canon_angle}")
+            # Ensure servo angles are within bounds (0-180 degrees)
+            self.x_servo_pos = max(0, min(180, target_x_servo_pos))
+            self.y_servo_pos = max(0, min(180, target_y_servo_pos))
+
+            # Move servos
+            self.kit.servo[self.horizontal_channel].angle = self.x_servo_pos
+            self.kit.servo[self.vertical_channel].angle = self.y_servo_pos
