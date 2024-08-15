@@ -11,7 +11,6 @@ class Marshmellow_Cannon:
         self.kit.servo[self.base_channel].angle = self.base_angle
         self.kit.servo[self.cannon_channel].angle = self.cannon_angle
         self.camera_scope = 90
-        self.fov = 90
     
     def set_camera_scope(self, scope):
         #Center the servos at 90 degrees.
@@ -25,31 +24,40 @@ class Marshmellow_Cannon:
         self.kit.servo[self.base_channel].angle = self.base_angle
         self.kit.servo[self.cannon_channel].angle = self.cannon_angle
 
+
+    def pixel_to_angle(self, pixel, frame_size):
+         center = frame_size / 2
+        return ((pixel - center) / center) * (90 / 2)
+    
     def center(self):
         #Center the servos at 90 degrees.
         self.set_angles(90, 135)
 
-    def pixel_to_angle(self, pixel, frame_size):
-        center = frame_size / 2
-        return ((pixel - center) / center) * (self.fov / 2)
-
-
-
-    def track_face(self, x, y, frame_width, frame_height):
+    def track_face(self, x, y,deltax):
+        #Adjust the servos based on the normalized x and y coordinates of the detected face.
+        # Calculate the difference from the center
+        x_diff = x - 0.5 
+        y_diff = y - 0.5
         
-        # Calculate angles relative to the camera's FOV
-        x_angle = self.pixel_to_angle(x, frame_width)
-        y_angle = self.pixel_to_angle(y, frame_height)
 
+        # if(deltax < 0.2):
+        #     z_calibrated = 0.2
+        # else:
+        #     z_calibrated = 0.0385 * np.power(deltax,-1.07)
+            
+        # znormalised = 0.02
+        # Calculate the new angles based on the difference
         
-        base_angle = self.base_angle + x_angle * 0.2 # Scaling the difference to the servo angle range
-        cannon_angle = self.cannon_angle + y_angle * 0.2
+        # base_angle = self.base_angle + -1*np.arcsin((x_diff)/znormalised)
+        
+        # cannon_angle = self.cannon_angle +  np.arcsin((y_diff)/znormalised)
+        
+        base_angle = self.base_angle + (-pixel_to_angle(x_diff, 640) * self.camera_scope)  # Scaling the difference to the servo angle range
+        cannon_angle = self.cannon_angle + (pixel_to_angle(y_diff, 640) * self.camera_scope)
 
         # Ensure the angles are within the valid range
-        base_angle = max(0, min(100, base_angle))
-        cannon_angle = max(0, min(100, cannon_angle))
+        base_angle = max(0, min(180, base_angle))
+        cannon_angle = max(0, min(180, cannon_angle))
 
         # Set the new angles
         self.set_angles(base_angle, cannon_angle)
-
-
