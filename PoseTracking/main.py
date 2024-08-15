@@ -2,7 +2,7 @@ import cv2
 import mediapipe as mp
 import time
 
-from Marshmellow_Cannon import Marshmellow_Cannon
+from turret import Marshmellow_Cannon
 # Example usage
 
 
@@ -63,11 +63,11 @@ while cap.isOpened():
             if lowerlimit <= nose.x <=  highlimit and lowerlimit <= nose.y <= highlimit:
                 pass  # Do nothing to avoid overshoot
             elif lowerlimit <= nose.x <= highlimit and not lowerlimit <= nose.y <= highlimit:
-                cannon.track_face(nose.x, 0.5,deltax)
+                cannon.track_face(nose.x, 0.5, 640, 640)
             elif (not lowerlimit <= nose.x <= highlimit) and lowerlimit <= nose.y <= highlimit:
-                cannon.track_face(0.5,nose.y,deltax)
+                cannon.track_face(0.5,nose.y,640, 640)
             else:
-                cannon.track_face(nose.x, nose.y, deltax)  # Adjust servos to track the face
+                cannon.track_face(nose.x, nose.y, 640, 640)  # Adjust servos to track the face
             # Check conditions and call cannon.track_face accordingly
             
             
