@@ -1,53 +1,82 @@
-# tracking.py
 import cv2
 import mediapipe as mp
-from turret import Turret
+import time
+
+from Marshmellow_Cannon import Marshmellow_Cannon
+# Example usage
+
 
 # Initialize MediaPipe Pose
 mp_pose = mp.solutions.pose
 pose = mp_pose.Pose()
 mp_drawing = mp.solutions.drawing_utils
 
-# Camera setup
+# Initialize video capture with lower resolution
 cap = cv2.VideoCapture(0)
-if not cap.isOpened():
-    print("Error: Could not open video device.")
-    exit()
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 640)
 
-# Initialize Turret
-horizontal_fov = 90
-vertical_fov = 90
-turret = Turret(horizontal_channel=0, vertical_channel=1, horizontal_fov=horizontal_fov, vertical_fov=vertical_fov, easing_factor=0.1, dead_zone=10)
+# Set frame rate limit
+fps_limit = 90
+prev_time = 0
+center_of_screen = 0.5
+
+#ini cannon
+cannon = Marshmellow_Cannon(base_channel=0, cannon_channel=1)
+cannon.center()
+cannon.set_camera_scope(10)
 
 while cap.isOpened():
-    ret, frame = cap.read()
-    if not ret:
-        break
+    time_elapsed = time.time() - prev_time
+    if time_elapsed > 1./fps_limit:
+        prev_time = time.time()
 
-    # Convert the BGR image to RGB
-    image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    # Process the image and find poses
-    results = pose.process(image)
+        ret, frame = cap.read()
+        if not ret:
+            break
 
-    # Draw the pose annotation on the image.
-    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-    if results.pose_landmarks:
-        mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
+        # Convert the frame to RGB
+        image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-        # Get the coordinates of the nose (as an example)
-        nose = results.pose_landmarks.landmark[mp_pose.PoseLandmark.NOSE]
-        x, y = int(nose.x * frame.shape[1]), int(nose.y * frame.shape[0])
+        # Process the frame and find pose
+        results = pose.process(image)
 
-        # Draw a circle at the nose position
-        cv2.circle(image, (x, y), 10, (0, 255, 0), -1)
+        # Convert back to BGR for OpenCV
+        image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
-        # Update turret position based on nose coordinates
-        turret.update_position(x, y, frame.shape[1], frame.shape[0])
+        # Draw the pose annotation on the image and get the nose coordinates
+        if results.pose_landmarks:
+            mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
+            
+            # Get the nose coordinates 
+            nose = results.pose_landmarks.landmark[0]
+            size1 = results.pose_landmarks.landmark[2]
+            size2 = results.pose_landmarks.landmark[5]
+            deltax = size2.x - size1.x
+            
+            print(f'Nose coordinates: {nose}')
+      
+            
+            print(f'dif x: {deltax}')
+            lowerlimit, highlimit = 0.49, 0.51
+            
+            if lowerlimit <= nose.x <=  highlimit and lowerlimit <= nose.y <= highlimit:
+                pass  # Do nothing to avoid overshoot
+            elif lowerlimit <= nose.x <= highlimit and not lowerlimit <= nose.y <= highlimit:
+                cannon.track_face(nose.x, 0.5,deltax)
+            elif (not lowerlimit <= nose.x <= highlimit) and lowerlimit <= nose.y <= highlimit:
+                cannon.track_face(0.5,nose.y,deltax)
+            else:
+                cannon.track_face(nose.x, nose.y, deltax)  # Adjust servos to track the face
+            # Check conditions and call cannon.track_face accordingly
+            
+            
+            
+        # Display the frame
+        cv2.imshow('MediaPipe Pose', image)
 
-    cv2.imshow('Frame', image)
-
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
 
 cap.release()
 cv2.destroyAllWindows()
