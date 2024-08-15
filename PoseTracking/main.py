@@ -15,8 +15,8 @@ if not cap.isOpened():
     exit()
 
 # Initialize Turret
-horizontal_fov = 60
-vertical_fov = 45
+horizontal_fov = 90
+vertical_fov = 90
 turret = Turret(horizontal_channel=0, vertical_channel=1, horizontal_fov=horizontal_fov, vertical_fov=vertical_fov, easing_factor=0.1, dead_zone=10)
 
 while cap.isOpened():
