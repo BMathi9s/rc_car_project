@@ -1,39 +1,55 @@
-# turret.py
 from adafruit_servokit import ServoKit
+import numpy as np
 
-class Turret:
-    def __init__(self, horizontal_channel, vertical_channel, horizontal_fov, vertical_fov, easing_factor=0.1, dead_zone=10):
+class Marshmellow_Cannon:
+    def __init__(self, base_channel, cannon_channel, base_angle=90, cannon_angle=90):
         self.kit = ServoKit(channels=16)
-        self.horizontal_channel = horizontal_channel
-        self.vertical_channel = vertical_channel
-        self.horizontal_fov = horizontal_fov
-        self.vertical_fov = vertical_fov
-        self.easing_factor = easing_factor
-        self.dead_zone = dead_zone
+        self.base_channel = base_channel
+        self.cannon_channel = cannon_channel
+        self.base_angle = base_angle
+        self.cannon_angle = cannon_angle
+        self.kit.servo[self.base_channel].angle = self.base_angle
+        self.kit.servo[self.cannon_channel].angle = self.cannon_angle
+        self.camera_scope = 90
+        self.fov = 90
+    
+    def set_camera_scope(self, scope):
+        #Center the servos at 90 degrees.
+        self.camera_scope = scope
+        
+        
+    def set_angles(self, base_angle, cannon_angle):
+        #Set the base and cannon angles to specified values.
+        self.base_angle = base_angle
+        self.cannon_angle = cannon_angle
+        self.kit.servo[self.base_channel].angle = self.base_angle
+        self.kit.servo[self.cannon_channel].angle = self.cannon_angle
 
-        # Initial servo positions
-        self.x_servo_pos = 90
-        self.y_servo_pos = 90
+    def center(self):
+        #Center the servos at 90 degrees.
+        self.set_angles(90, 135)
 
-    def pixel_to_angle(self, pixel, frame_size, fov):
+    def pixeltoangle(self, pixel, frame_size):
         center = frame_size / 2
-        return ((pixel - center) / center) * (fov / 2)
+        return ((pixel - center) / center) * (self.fov / 2)
 
-    def update_position(self, x, y, frame_width, frame_height):
+
+
+    def track_face(self, x, y, frame_width, frame_height):
+        
         # Calculate angles relative to the camera's FOV
-        x_angle = self.pixel_to_angle(x, frame_width, self.horizontal_fov)
-        y_angle = self.pixel_to_angle(y, frame_height, self.vertical_fov)
+        x_angle = self.pixel_to_angle(x, frame_width, self.fov)
+        y_angle = self.pixel_to_angle(y, frame_height, self.fov)
 
-        # Check if the detected point is outside the dead zone
-        if abs(x - frame_width / 2) > self.dead_zone or abs(y - frame_height / 2) > self.dead_zone:
-            # Calculate the target servo positions with easing
-            target_x_servo_pos = self.x_servo_pos + (x_angle * self.easing_factor)
-            target_y_servo_pos = self.y_servo_pos + (y_angle * self.easing_factor)
+        
+        base_angle = self.base_angle + x_angle * 0.2 # Scaling the difference to the servo angle range
+        cannon_angle = self.cannon_angle + y_angle * 0.2
 
-            # Ensure servo angles are within bounds (0-180 degrees)
-            self.x_servo_pos = max(0, min(180, target_x_servo_pos))
-            self.y_servo_pos = max(0, min(180, target_y_servo_pos))
+        # Ensure the angles are within the valid range
+        base_angle = max(0, min(100, base_angle))
+        cannon_angle = max(0, min(100, cannon_angle))
 
-            # Move servos
-            self.kit.servo[self.horizontal_channel].angle = self.x_servo_pos
-            self.kit.servo[self.vertical_channel].angle = self.y_servo_pos
+        # Set the new angles
+        self.set_angles(base_angle, cannon_angle)
+
+
