@@ -29,7 +29,7 @@ class Marshmellow_Cannon:
         #Center the servos at 90 degrees.
         self.set_angles(90, 135)
 
-    def pixeltoangle(self, pixel, frame_size):
+    def pixel_to_angle(self, pixel, frame_size):
         center = frame_size / 2
         return ((pixel - center) / center) * (self.fov / 2)
 
@@ -38,8 +38,8 @@ class Marshmellow_Cannon:
     def track_face(self, x, y, frame_width, frame_height):
         
         # Calculate angles relative to the camera's FOV
-        x_angle = self.pixel_to_angle(x, frame_width, self.fov)
-        y_angle = self.pixel_to_angle(y, frame_height, self.fov)
+        x_angle = self.pixel_to_angle(x, frame_width)
+        y_angle = self.pixel_to_angle(y, frame_height)
 
         
         base_angle = self.base_angle + x_angle * 0.2 # Scaling the difference to the servo angle range
