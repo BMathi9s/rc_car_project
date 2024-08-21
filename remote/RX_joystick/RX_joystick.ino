@@ -3,17 +3,29 @@
 #include <RF24.h>
 #include <Arduino.h>
 #include <ESP32Servo.h> 
+#include <Stepper.h>
 //esp32servo by kevin 
-// only work by using version 1.2.1!!
+
 #define BASESERVO_PIN 25      // GPIO pin used to connect the servo control (digital out)
 #define HEADSERVO_PIN 26
 #define turretinc 2 
+
+//#define BRUSHLESS_PIN 33
+
+
+#define STEPPER_IN1 15
+#define STEPPER_IN2 2
+#define STEPPER_IN3 22
+#define STEPPER_IN4 32
+const int stepsPerRevolution = 32 * 64;  // change this to fit the number of steps per revolution
+Stepper myStepper(stepsPerRevolution, STEPPER_IN1, STEPPER_IN3, STEPPER_IN2, STEPPER_IN4);
 
 RF24 radio(4, 5); // (CE, CSN)
 
 struct { // this has to be a struct! and the transmission arrays have to have same length as receiver ones
 byte engineJoystickData[3]; // Array to hold X and Y values for the engines
 byte servoJoystickData[3]; // Array to hold X and Y values for servo
+byte canon_data[3]; // Array to hold X and Y values for servo
 } joysticks;
 
 #define MOTOR_DIR_L 13
@@ -32,12 +44,13 @@ const int resolution = 8;     // 8-bit resolution (0-255)
 
 #define MAX_SPEED 255
 
-const byte deadZoneMin = 118-15; // 118 - 20
-const byte deadZoneMax = 118+15; // 118 + 20
+const byte deadZoneMin = 127-10; // 118 - 20
+const byte deadZoneMax = 127+10; // 118 + 20
 
 // servo motors
 Servo head; // (x)
 Servo base; // (y)
+//Servo BRUSHLESS; // (y)
 // initialize 
 int xShift = 120;
 int yShift = 120;
@@ -48,7 +61,7 @@ int midpointbase = 140;
 float speedL, speedR;
 
 void setup() {
-    Serial.begin(9600); // Begin Serial communication
+    Serial.begin(115200); // Begin Serial communication
 
     // Initialize motor direction pins as outputs
     pinMode(MOTOR_DIR_L, OUTPUT);
@@ -77,6 +90,7 @@ void setup() {
     radio.startListening(); // set receiver mode
 
     servo_init();
+    myStepper.setSpeed(10);
 }
 
 void loop() {
@@ -91,8 +105,14 @@ void loop() {
         byte y2 = joysticks.servoJoystickData[1]; 
         byte sw2 = joysticks.servoJoystickData[2]; // switch joystick 2
         //printJoysticksData(x1, y1, sw1, x2, y2, sw2);
+
+        byte pot = joysticks.canon_data[0]; 
+        byte left = joysticks.canon_data[1]; 
+        byte right = joysticks.canon_data[2]; 
+
         handleJoystickInput(x1, y1);
-        handleServoJoystick(x2, y2, sw2);
+        handleServoJoystick(x2, y2, sw2, sw1);
+        handlecanon_data(pot,left,right);
 
         lastReceiveTime = millis();
     }
@@ -100,6 +120,25 @@ void loop() {
     checkTimeout(); // Check for timeout condition
 
     delay(10); // Adding a small delay for smoother control
+}
+
+void handlecanon_data(byte speed, byte left, byte right){
+
+    //BRUSHLESS.write(speed);
+    Serial.print(" Brushless speed:");
+    Serial.println(speed);
+
+    if(left){
+        //myStepper.step(stepsPerRevolution);
+        Serial.println(" reload left");
+      }
+    if(right){
+        //myStepper.step(-stepsPerRevolution);
+        Serial.println(" reload right");
+      }
+    if(!left  && !right){
+    Serial.println("reload not moving");
+    }
 }
 
 // Handle joystick input and control motors
@@ -123,21 +162,21 @@ void handleJoystickInput(byte x, byte y) {
     setMotorSpeed(motorSpeedR, MOTOR_DIR_R, MOTOR_PWM_R);
 
     // Print speeds for debugging
-    Serial.print("MappedX: ");
-    Serial.print(mappedX);
+    // Serial.print("MappedX: ");
+    // Serial.print(mappedX);
 
-    Serial.print(" MappedY: ");
-    Serial.println(mappedY);
+    // Serial.print(" MappedY: ");
+    // Serial.println(mappedY);
 
-    Serial.print("SpeedL: ");
-    Serial.print(speedL);
-    Serial.print(" DirectionL: ");
-    Serial.println(speedL > 0 ? "Forward" : "Backward");
+    // Serial.print("SpeedL: ");
+    // Serial.print(speedL);
+    // Serial.print(" DirectionL: ");
+    // Serial.println(speedL > 0 ? "Forward" : "Backward");
 
-    Serial.print("SpeedR: ");
-    Serial.print(speedR);
-    Serial.print(" DirectionR: ");
-    Serial.println(speedR > 0 ? "Forward" : "Backward");
+    // Serial.print("SpeedR: ");
+    // Serial.print(speedR);
+    // Serial.print(" DirectionR: ");
+    // Serial.println(speedR > 0 ? "Forward" : "Backward");
 }
 
 // To determine the sign of some variable
@@ -178,31 +217,40 @@ void setMotorSpeed(int speed, int dirPin, int pwmPin) {
 
 
 // Handle joystick for servo (camera) movement
-void handleServoJoystick(byte x, byte y, byte sw){
-  const byte deadZoneMin = 118 - 20;
-  const byte deadZoneMax = 118 + 20;
+void handleServoJoystick(byte x, byte y, byte sw, byte state){
+  const byte deadZoneMin = 127 - 20;
+  const byte deadZoneMax = 127 + 20;
 
-  if(sw == HIGH){ // if joystick is pressed (switch)
-    xShift = midpointbase;  // reset angles
-    yShift = midpointhead;
-  } else if(x >= deadZoneMin && x <= deadZoneMax && y >= deadZoneMin && y <= deadZoneMax){
-    // do nothing
-  } 
-  if (x > deadZoneMax){
-      if(xShift <= 180)
-        xShift += turretinc;
-  } 
-  if (x < deadZoneMin){
-      if(xShift >= 0)
-        xShift -= turretinc;
-  } 
-  if (y > deadZoneMax){
-          if(yShift <= 180)
-        yShift += turretinc;
-  } 
-  if (y < deadZoneMin){
-      if(yShift >= 0)
-        yShift -= turretinc;
+  if(!state){
+    if(sw == HIGH){ // if joystick is pressed (switch)
+      xShift = midpointbase;  // reset angles
+      yShift = midpointhead;
+    } else if(x >= deadZoneMin && x <= deadZoneMax && y >= deadZoneMin && y <= deadZoneMax){
+      // do nothing
+    } 
+    if (x > deadZoneMax){
+        if(xShift <= 180)
+          xShift += turretinc;
+    } 
+    if (x < deadZoneMin){
+        if(xShift >= 0)
+          xShift -= turretinc;
+    } 
+    if (y > deadZoneMax){
+            if(yShift <= 180)
+          yShift += turretinc;
+    } 
+    if (y < deadZoneMin){
+        if(yShift >= 0)
+          yShift -= turretinc;
+    }
+  }
+  if(state){
+    if(sw){
+      //reset mpu somehow
+    }
+    xShift = x;
+    yShift = y;
   }
 
   head.write(xShift);
@@ -211,7 +259,7 @@ void handleServoJoystick(byte x, byte y, byte sw){
 
 // Stop the motors
 void stop() {
-    Serial.println("Stop");
+    //Serial.println("Stop");
     analogWrite(MOTOR_PWM_L, 0);
     analogWrite(MOTOR_PWM_R, 0);
 }
@@ -220,7 +268,8 @@ void checkTimeout() {
     unsigned long currentMillis = millis();
     if (currentMillis - lastReceiveTime >= timeoutInterval) {
         // Timeout action here
-        Serial.println("Transmission timeout");
+        Serial.print("Transmission timeout  :::: Stopping activities ");
+        stop();
         lastReceiveTime = currentMillis; // Reset the timer
         resetReception(); // Reset reception
     }
@@ -255,6 +304,9 @@ void servo_init(){
   base.attach(BASESERVO_PIN, 500, 2400);
   head.setPeriodHertz(50);
   head.attach(HEADSERVO_PIN, 500, 2400); 
+
+  // BRUSHLESS.setPeriodHertz(50);
+  // BRUSHLESS.attach(BRUSHLESS_PIN, 500, 2400);
 
 }
 void printJoysticksData(byte x1, byte y1, byte sw1, byte x2, byte y2, byte sw2){
