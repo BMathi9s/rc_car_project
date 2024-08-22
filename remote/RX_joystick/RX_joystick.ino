@@ -64,8 +64,9 @@ float speedL, speedR;
 
 void setup() {
     Serial.begin(115200); // Begin Serial communication
-    non_blocking_stepper.setMaxSpeed(2000);
-  non_blocking_stepper.setSpeed(0);  // Set an initial speed
+    non_blocking_stepper.setMaxSpeed(1000);
+    non_blocking_stepper.setSpeed(0);  // Set an initial speed
+    //non_blocking_stepper.setAcceleration(100);
 
     // Initialize motor direction pins as outputs
     pinMode(MOTOR_DIR_L, OUTPUT);
@@ -127,20 +128,23 @@ void loop() {
 }
 
 void handlecanon_data(byte speed, byte left, byte right){
-
+  
     //BRUSHLESS.write(speed);
     Serial.print(" Brushless speed:");
     Serial.println(speed);
 
-    if(left){
-        //myStepper.step(stepsPerRevolution);
-        Serial.println(" reload left");
-        non_blocking_stepper.setSpeed(2000);
-      }
     if(right){
-        //myStepper.step(-stepsPerRevolution);
+        //myStepper.step(stepsPerRevolution);
         Serial.println(" reload right");
-        non_blocking_stepper.setSpeed(200); // Set negative speed for CCW
+        
+        non_blocking_stepper.setSpeed(100);//100
+      }
+    if(left){
+        //myStepper.step(-stepsPerRevolution);
+        non_blocking_stepper.setSpeed(100); //problem with the library, it is not turn ccw
+        Serial.println(" reload left");
+       
+        
       }
     if(!left  && !right){
     Serial.println("reload not moving");
