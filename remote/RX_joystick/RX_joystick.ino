@@ -3,8 +3,9 @@
 #include <RF24.h>
 #include <Arduino.h>
 #include <ESP32Servo.h> 
-#include <Stepper.h>
-//esp32servo by kevin 
+#include <AccelStepper.h>
+
+
 
 #define BASESERVO_PIN 25      // GPIO pin used to connect the servo control (digital out)
 #define HEADSERVO_PIN 26
@@ -17,8 +18,9 @@
 #define STEPPER_IN2 2
 #define STEPPER_IN3 22
 #define STEPPER_IN4 32
-const int stepsPerRevolution = 32 * 64;  // change this to fit the number of steps per revolution
-Stepper myStepper(stepsPerRevolution, STEPPER_IN1, STEPPER_IN3, STEPPER_IN2, STEPPER_IN4);
+
+AccelStepper non_blocking_stepper(AccelStepper::FULL4WIRE, STEPPER_IN1, STEPPER_IN2, STEPPER_IN3, STEPPER_IN4);
+
 
 RF24 radio(4, 5); // (CE, CSN)
 
@@ -52,16 +54,18 @@ Servo head; // (x)
 Servo base; // (y)
 //Servo BRUSHLESS; // (y)
 // initialize 
-int xShift = 120;
-int yShift = 120;
-int midpointhead = 100;
-int midpointbase = 140;
+int xShift = 127;
+int yShift = 127;
+int midpointhead = 90;
+int midpointbase = 100;
 
 // Declare speedL and speedR as global variables
 float speedL, speedR;
 
 void setup() {
     Serial.begin(115200); // Begin Serial communication
+    non_blocking_stepper.setMaxSpeed(2000);
+  non_blocking_stepper.setSpeed(0);  // Set an initial speed
 
     // Initialize motor direction pins as outputs
     pinMode(MOTOR_DIR_L, OUTPUT);
@@ -90,7 +94,6 @@ void setup() {
     radio.startListening(); // set receiver mode
 
     servo_init();
-    myStepper.setSpeed(10);
 }
 
 void loop() {
@@ -116,6 +119,7 @@ void loop() {
 
         lastReceiveTime = millis();
     }
+    non_blocking_stepper.runSpeed();
 
     checkTimeout(); // Check for timeout condition
 
@@ -131,95 +135,28 @@ void handlecanon_data(byte speed, byte left, byte right){
     if(left){
         //myStepper.step(stepsPerRevolution);
         Serial.println(" reload left");
+        non_blocking_stepper.setSpeed(2000);
       }
     if(right){
         //myStepper.step(-stepsPerRevolution);
         Serial.println(" reload right");
+        non_blocking_stepper.setSpeed(200); // Set negative speed for CCW
       }
     if(!left  && !right){
     Serial.println("reload not moving");
+    non_blocking_stepper.setSpeed(0); // Stop movement
     }
 }
 
-// Handle joystick input and control motors
-void handleJoystickInput(byte x, byte y) {
-    if (x >= deadZoneMin && x <= deadZoneMax && y >= deadZoneMin && y <= deadZoneMax) {
-        stop();
-        return;
-    }
 
-    int mappedX = map(x, 0, MAX_SPEED, -MAX_SPEED, MAX_SPEED); // 0-255 -> -255 to 255
-    int mappedY = map(y, 0, MAX_SPEED, -MAX_SPEED, MAX_SPEED);
-
-    calculateMotorSpeeds(mappedX, mappedY);
-
-    // Ensure speeds are within bounds
-    int motorSpeedL = constrain(speedL, -MAX_SPEED, MAX_SPEED);
-    int motorSpeedR = constrain(speedR, -MAX_SPEED, MAX_SPEED);
-
-    // Set the motor speed and direction
-    setMotorSpeed(motorSpeedL, MOTOR_DIR_L, MOTOR_PWM_L);
-    setMotorSpeed(motorSpeedR, MOTOR_DIR_R, MOTOR_PWM_R);
-
-    // Print speeds for debugging
-    // Serial.print("MappedX: ");
-    // Serial.print(mappedX);
-
-    // Serial.print(" MappedY: ");
-    // Serial.println(mappedY);
-
-    // Serial.print("SpeedL: ");
-    // Serial.print(speedL);
-    // Serial.print(" DirectionL: ");
-    // Serial.println(speedL > 0 ? "Forward" : "Backward");
-
-    // Serial.print("SpeedR: ");
-    // Serial.print(speedR);
-    // Serial.print(" DirectionR: ");
-    // Serial.println(speedR > 0 ? "Forward" : "Backward");
+void stop_cannon(){
+ //BRUSHLESS.write(0);
+  //no step
 }
-
-// To determine the sign of some variable
-int sgn(float val) {
-    return (0 < val) - (val < 0);
-}
-
-// Calculate motor speeds based on input
-void calculateMotorSpeeds(float mappedX, float mappedY) {
-    
-    float normalizedX = mappedX / MAX_SPEED; 
-    float normalizedY = mappedY / MAX_SPEED;
-    
-    // Calculate magnitude and ensure it does not exceed 1.0
-    float magnitude = fmin(sqrt(normalizedX * normalizedX + normalizedY * normalizedY), 1.0f);
-    float turnFactor = pow(fabs(normalizedX), 1.5) * (1 - fabs(normalizedY));
-    
-    // Calculate speed while taking into acount the turn
-    speedR = normalizedY - turnFactor * sgn(normalizedX);  
-    speedL = normalizedY + turnFactor * sgn(normalizedX);  
-    
-    // Scale by the magnitude of the vector
-    speedL *= MAX_SPEED * magnitude;  
-    speedR *= MAX_SPEED * magnitude; 
-}
-
-// Set motor speed and direction
-void setMotorSpeed(int speed, int dirPin, int pwmPin) {
-    if (speed > 0) {
-        digitalWrite(dirPin, HIGH);
-    } else {
-        digitalWrite(dirPin, LOW);
-        speed = -speed;
-    }
-    analogWrite(pwmPin, speed);
-}
-
-
-
 // Handle joystick for servo (camera) movement
 void handleServoJoystick(byte x, byte y, byte sw, byte state){
-  const byte deadZoneMin = 127 - 20;
-  const byte deadZoneMax = 127 + 20;
+  const byte deadZoneMin = 127 - 5;
+  const byte deadZoneMax = 127 + 5;
 
   if(!state){
     if(sw == HIGH){ // if joystick is pressed (switch)
@@ -229,20 +166,19 @@ void handleServoJoystick(byte x, byte y, byte sw, byte state){
       // do nothing
     } 
     if (x > deadZoneMax){
-        if(xShift <= 180)
-          xShift += turretinc;
+        if(xShift <= 180){xShift += turretinc;}
+          
     } 
     if (x < deadZoneMin){
-        if(xShift >= 0)
-          xShift -= turretinc;
+        if(xShift >= 0){xShift -= turretinc;}
     } 
     if (y > deadZoneMax){
-            if(yShift <= 180)
-          yShift += turretinc;
+            if(yShift <= 180){yShift += turretinc;}
+          
     } 
     if (y < deadZoneMin){
-        if(yShift >= 0)
-          yShift -= turretinc;
+        if(yShift >= 0){yShift -= turretinc;}
+          
     }
   }
   if(state){
@@ -258,7 +194,7 @@ void handleServoJoystick(byte x, byte y, byte sw, byte state){
 }
 
 // Stop the motors
-void stop() {
+void stop_motors() {
     //Serial.println("Stop");
     analogWrite(MOTOR_PWM_L, 0);
     analogWrite(MOTOR_PWM_R, 0);
@@ -269,7 +205,8 @@ void checkTimeout() {
     if (currentMillis - lastReceiveTime >= timeoutInterval) {
         // Timeout action here
         Serial.print("Transmission timeout  :::: Stopping activities ");
-        stop();
+        stop_motors();
+        stop_cannon();
         lastReceiveTime = currentMillis; // Reset the timer
         resetReception(); // Reset reception
     }
@@ -309,6 +246,74 @@ void servo_init(){
   // BRUSHLESS.attach(BRUSHLESS_PIN, 500, 2400);
 
 }
+
+// Handle joystick input and control motors
+void handleJoystickInput(byte x, byte y) {
+    if (x >= deadZoneMin && x <= deadZoneMax && y >= deadZoneMin && y <= deadZoneMax) {
+        stop_motors();
+        return;
+    }
+
+    int mappedX = map(x, 0, MAX_SPEED, -MAX_SPEED, MAX_SPEED); // 0-255 -> -255 to 255
+    int mappedY = map(y, 0, MAX_SPEED, -MAX_SPEED, MAX_SPEED);
+
+    calculateMotorSpeeds(mappedX, mappedY);
+
+    // Ensure speeds are within bounds
+    int motorSpeedL = constrain(speedL, -MAX_SPEED, MAX_SPEED);
+    int motorSpeedR = constrain(speedR, -MAX_SPEED, MAX_SPEED);
+
+    // Set the motor speed and direction
+    setMotorSpeed(motorSpeedL, MOTOR_DIR_L, MOTOR_PWM_L);
+    setMotorSpeed(motorSpeedR, MOTOR_DIR_R, MOTOR_PWM_R);
+
+    // Print speeds for debugging
+    // Serial.print("MappedX: ");
+    // Serial.print(mappedX);
+
+    // Serial.print(" MappedY: ");
+    // Serial.println(mappedY);
+
+    // Serial.print("SpeedL: ");
+    // Serial.print(speedL);
+    // Serial.print(" DirectionL: ");
+    // Serial.println(speedL > 0 ? "Forward" : "Backward");
+
+    // Serial.print("SpeedR: ");
+    // Serial.print(speedR);
+    // Serial.print(" DirectionR: ");
+    // Serial.println(speedR > 0 ? "Forward" : "Backward");
+}
+// Calculate motor speeds based on input
+void calculateMotorSpeeds(float mappedX, float mappedY) {
+    
+    float normalizedX = mappedX / MAX_SPEED; 
+    float normalizedY = mappedY / MAX_SPEED;
+    
+    // Calculate magnitude and ensure it does not exceed 1.0
+    float magnitude = fmin(sqrt(normalizedX * normalizedX + normalizedY * normalizedY), 1.0f);
+    float turnFactor = pow(fabs(normalizedX), 1.5) * (1 - fabs(normalizedY));
+    
+    // Calculate speed while taking into acount the turn
+    speedR = normalizedY - turnFactor * sgn(normalizedX);  
+    speedL = normalizedY + turnFactor * sgn(normalizedX);  
+    
+    // Scale by the magnitude of the vector
+    speedL *= MAX_SPEED * magnitude;  
+    speedR *= MAX_SPEED * magnitude; 
+}
+
+// Set motor speed and direction
+void setMotorSpeed(int speed, int dirPin, int pwmPin) {
+    if (speed > 0) {
+        digitalWrite(dirPin, HIGH);
+    } else {
+        digitalWrite(dirPin, LOW);
+        speed = -speed;
+    }
+    analogWrite(pwmPin, speed);
+}
+
 void printJoysticksData(byte x1, byte y1, byte sw1, byte x2, byte y2, byte sw2){
   Serial.print("Joystick 1: ");
   Serial.print(x1);
@@ -323,3 +328,7 @@ void printJoysticksData(byte x1, byte y1, byte sw1, byte x2, byte y2, byte sw2){
   Serial.print(" , ");
   Serial.println(sw2);
 }
+
+
+// To determine the sign of some variable
+int sgn(float val) {return (0 < val) - (val < 0);}
