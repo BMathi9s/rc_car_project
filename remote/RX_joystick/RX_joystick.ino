@@ -10,6 +10,8 @@
 #define BASESERVO_PIN 25      // GPIO pin used to connect the servo control (digital out)
 #define HEADSERVO_PIN 26
 #define turretinc 2 
+Servo head; // (x)
+Servo base; // (y)
 
 #define BRUSHLESS_PIN 33
 Servo BRUSHLESS; // (y)
@@ -18,16 +20,16 @@ Servo BRUSHLESS; // (y)
 #define STEPPER_IN2 2
 #define STEPPER_IN3 22
 #define STEPPER_IN4 32
-
 AccelStepper non_blocking_stepper(AccelStepper::FULL4WIRE, STEPPER_IN1, STEPPER_IN2, STEPPER_IN3, STEPPER_IN4);
 
+#define CE_PIN 4
+#define CSN_PIN 5
+RF24 radio(CE_PIN, CSN_PIN); // (CE, CSN)
 
-RF24 radio(4, 5); // (CE, CSN)
-
-struct { // this has to be a struct! and the transmission arrays have to have same length as receiver ones
-byte engineJoystickData[3]; // Array to hold X and Y values for the engines
-byte servoJoystickData[3]; // Array to hold X and Y values for servo
-byte canon_data[3]; // Array to hold X and Y values for servo
+struct { //received packet
+byte engineJoystickData[3]; 
+byte servoJoystickData[3]; 
+byte canon_data[3]; 
 } joysticks;
 
 #define MOTOR_DIR_L 13
@@ -49,11 +51,8 @@ const int resolution = 8;     // 8-bit resolution (0-255)
 const byte deadZoneMin = 127-10; // 118 - 20
 const byte deadZoneMax = 127+10; // 118 + 20
 
-// servo motors
-Servo head; // (x)
-Servo base; // (y)
 
-// initialize 
+// initialize  fpv turret
 int xShift = 127;
 int yShift = 127;
 int fpv_inipos_y = 90;
@@ -64,38 +63,17 @@ float speedL, speedR;
 
 void setup() {
     Serial.begin(115200); // Begin Serial communication
-    non_blocking_stepper.setMaxSpeed(1000);
-    non_blocking_stepper.setSpeed(0);  // Set an initial speed
-    //non_blocking_stepper.setAcceleration(100);
+
+    stepper_init();
+    servo_init();
+    radio_init();
 
     // Initialize motor direction pins as outputs
     pinMode(MOTOR_DIR_L, OUTPUT);
     pinMode(MOTOR_DIR_R, OUTPUT);
 
-    // Initialize radio
-    if (!radio.begin()) {
-        Serial.println("Radio initialization failed");
-        while (1);
-    }
-    radio.setChannel(5);
-    radio.setDataRate(RF24_1MBPS);
-    radio.setPALevel(RF24_PA_HIGH);
-    radio.openReadingPipe(1, 0x1234567890LL); // Set address at which nrf24 will communicate
-    radio.startListening(); // Set receiver mode
-
-    delay(10);
-
-    radio.setPayloadSize(4);  // this sets the package size to 4 bytes (default, max: 32 bytes) - 4 bytes for joystick values. might increase range
-    radio.enableAckPayload(); // enable automatic acknowledge signals
-    radio.setAutoAck(1);
-    radio.setRetries(5, 5); // (delay, max no.of retries)
-    radio.setAutoAck(true);
-
-    radio.openReadingPipe(1, 0x1234567890LL); // set address at which nrf24 will communicate
-    radio.startListening(); // set receiver mode
-
-    servo_init();
 }
+
 
 void loop() {
     if (radio.available()) {
@@ -127,11 +105,27 @@ void loop() {
     delay(10); // Adding a small delay for smoother control
 }
 
+
+void servo_init(){
+// Allow allocation of all timers
+    ESP32PWM::allocateTimer(0);
+    ESP32PWM::allocateTimer(1);
+    ESP32PWM::allocateTimer(2);
+    ESP32PWM::allocateTimer(3);
+    base.setPeriodHertz(50);// Standard 50hz servo
+    base.attach(BASESERVO_PIN, 500, 2500);
+    head.setPeriodHertz(50);
+    head.attach(HEADSERVO_PIN, 500, 2500); 
+    BRUSHLESS.setPeriodHertz(50);
+    BRUSHLESS.attach(BRUSHLESS_PIN, 500, 2500);
+
+}
+
 void handlecanon_data(byte speed, byte left, byte right){
-    // speed = map(speed,0,255,0,180);
-    // BRUSHLESS.write(speed);
-    // Serial.print(" Brushless speed:");
-    // Serial.println(speed);
+    speed = map(speed,0,255,0,180);
+    BRUSHLESS.write(speed);
+    Serial.print(" Brushless speed:");
+    Serial.println(speed);
 
     if(right){
         //Serial.println(" reload right");
@@ -181,10 +175,7 @@ void handleServoJoystick(byte x, byte y, byte sw, byte state){
         if(yShift >= 0){yShift -= turretinc;}
           
     }
-    //  Serial.print(" x : :");
-    //  Serial.print(x);
-    //  Serial.print(":  y : :");
-    //  Serial.println(y);
+    //  Serial.print(" x : :");Serial.print(x);Serial.print(":  y : :");Serial.println(y);
   }
   if(state){
     if(sw){
@@ -236,22 +227,6 @@ void resetReception() {
 }
 
 
-void servo_init(){
-// Allow allocation of all timers
-    ESP32PWM::allocateTimer(0);
-    ESP32PWM::allocateTimer(1);
-    ESP32PWM::allocateTimer(2);
-    ESP32PWM::allocateTimer(3);
-  base.setPeriodHertz(50);// Standard 50hz servo
-  base.attach(BASESERVO_PIN, 500, 2500);
-  head.setPeriodHertz(50);
-  head.attach(HEADSERVO_PIN, 500, 2500); 
-
-   BRUSHLESS.setPeriodHertz(50);
-   BRUSHLESS.attach(BRUSHLESS_PIN, 500, 2500);
-
-}
-
 // Handle joystick input and control motors
 void handleJoystickInput(byte x, byte y) {
     if (x >= deadZoneMin && x <= deadZoneMax && y >= deadZoneMin && y <= deadZoneMax) {
@@ -272,22 +247,7 @@ void handleJoystickInput(byte x, byte y) {
     setMotorSpeed(motorSpeedL, MOTOR_DIR_L, MOTOR_PWM_L);
     setMotorSpeed(motorSpeedR, MOTOR_DIR_R, MOTOR_PWM_R);
 
-    // Print speeds for debugging
-    // Serial.print("MappedX: ");
-    // Serial.print(mappedX);
-
-    // Serial.print(" MappedY: ");
-    // Serial.println(mappedY);
-
-    // Serial.print("SpeedL: ");
-    // Serial.print(speedL);
-    // Serial.print(" DirectionL: ");
-    // Serial.println(speedL > 0 ? "Forward" : "Backward");
-
-    // Serial.print("SpeedR: ");
-    // Serial.print(speedR);
-    // Serial.print(" DirectionR: ");
-    // Serial.println(speedR > 0 ? "Forward" : "Backward");
+     //printDebugInfo(mappedX, mappedY, speedL, speedR);
 }
 // Calculate motor speeds based on input
 void calculateMotorSpeeds(float mappedX, float mappedY) {
@@ -316,6 +276,7 @@ void setMotorSpeed(int speed, int dirPin, int pwmPin) {
         digitalWrite(dirPin, LOW);
         speed = -speed;
     }
+    if(speed < 50){speed = 0;} //avoid annoying noise
     analogWrite(pwmPin, speed);
 }
 
@@ -333,7 +294,52 @@ void printJoysticksData(byte x1, byte y1, byte sw1, byte x2, byte y2, byte sw2){
   Serial.print(" , ");
   Serial.println(sw2);
 }
+void printDebugInfo(int mappedX, int mappedY, int speedL, int speedR) {
+    Serial.print("MappedX: ");
+    Serial.print(mappedX);
 
+    Serial.print(" MappedY: ");
+    Serial.println(mappedY);
+
+    Serial.print("SpeedL: ");
+    Serial.print(speedL);
+    Serial.print(" DirectionL: ");
+    Serial.println(speedL > 0 ? "Forward" : "Backward");
+
+    Serial.print("SpeedR: ");
+    Serial.print(speedR);
+    Serial.print(" DirectionR: ");
+    Serial.println(speedR > 0 ? "Forward" : "Backward");
+}
 
 // To determine the sign of some variable
 int sgn(float val) {return (0 < val) - (val < 0);}
+
+void radio_init(){
+  // Initialize radio
+    if (!radio.begin()) {
+        Serial.println("Radio initialization failed");
+        while (1);
+    }
+    radio.setChannel(5);
+    radio.setDataRate(RF24_1MBPS);
+    radio.setPALevel(RF24_PA_HIGH);
+    radio.openReadingPipe(1, 0x1234567890LL); // Set address at which nrf24 will communicate
+    radio.startListening(); // Set receiver mode
+
+    delay(10);
+
+    radio.setPayloadSize(4);  // this sets the package size to 4 bytes (default, max: 32 bytes) - 4 bytes for joystick values. might increase range
+    radio.enableAckPayload(); // enable automatic acknowledge signals
+    radio.setAutoAck(1);
+    radio.setRetries(5, 5); // (delay, max no.of retries)
+    radio.setAutoAck(true);
+
+    radio.openReadingPipe(1, 0x1234567890LL); // set address at which nrf24 will communicate
+    radio.startListening(); // set receiver mode
+}
+
+void stepper_init(){
+  non_blocking_stepper.setMaxSpeed(1000);
+  non_blocking_stepper.setSpeed(0);
+}
