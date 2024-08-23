@@ -11,8 +11,8 @@
 #define HEADSERVO_PIN 26
 #define turretinc 2 
 
-//#define BRUSHLESS_PIN 33
-
+#define BRUSHLESS_PIN 33
+Servo BRUSHLESS; // (y)
 
 #define STEPPER_IN1 15
 #define STEPPER_IN2 2
@@ -52,12 +52,12 @@ const byte deadZoneMax = 127+10; // 118 + 20
 // servo motors
 Servo head; // (x)
 Servo base; // (y)
-//Servo BRUSHLESS; // (y)
+
 // initialize 
 int xShift = 127;
 int yShift = 127;
-int midpointhead = 90;
-int midpointbase = 100;
+int fpv_inipos_y = 90;
+int fpv_inipos_x = 100;
 
 // Declare speedL and speedR as global variables
 float speedL, speedR;
@@ -128,26 +128,22 @@ void loop() {
 }
 
 void handlecanon_data(byte speed, byte left, byte right){
-  
-    //BRUSHLESS.write(speed);
-    Serial.print(" Brushless speed:");
-    Serial.println(speed);
+    // speed = map(speed,0,255,0,180);
+    // BRUSHLESS.write(speed);
+    // Serial.print(" Brushless speed:");
+    // Serial.println(speed);
 
     if(right){
-        //myStepper.step(stepsPerRevolution);
-        Serial.println(" reload right");
-        
+        //Serial.println(" reload right");
         non_blocking_stepper.setSpeed(100);//100
       }
     if(left){
-        //myStepper.step(-stepsPerRevolution);
-        non_blocking_stepper.setSpeed(100); //problem with the library, it is not turn ccw
-        Serial.println(" reload left");
        
-        
+        non_blocking_stepper.setSpeed(100); //problem with the library, it is not turn ccw
+        //Serial.println(" reload left");
       }
     if(!left  && !right){
-    Serial.println("reload not moving");
+    //Serial.println("reload not moving");
     non_blocking_stepper.setSpeed(0); // Stop movement
     }
 }
@@ -159,13 +155,14 @@ void stop_cannon(){
 }
 // Handle joystick for servo (camera) movement
 void handleServoJoystick(byte x, byte y, byte sw, byte state){
-  const byte deadZoneMin = 127 - 5;
-  const byte deadZoneMax = 127 + 5;
+  
+  const int deadZoneMin = 110 - 10;
+  const int deadZoneMax = 110 + 10; //idk why, the joytick midpoint is 111x, 110y, so doing its own point
 
   if(!state){
     if(sw == HIGH){ // if joystick is pressed (switch)
-      xShift = midpointbase;  // reset angles
-      yShift = midpointhead;
+      xShift = fpv_inipos_x;  // reset angles
+      yShift = fpv_inipos_y;
     } else if(x >= deadZoneMin && x <= deadZoneMax && y >= deadZoneMin && y <= deadZoneMax){
       // do nothing
     } 
@@ -184,6 +181,10 @@ void handleServoJoystick(byte x, byte y, byte sw, byte state){
         if(yShift >= 0){yShift -= turretinc;}
           
     }
+    //  Serial.print(" x : :");
+    //  Serial.print(x);
+    //  Serial.print(":  y : :");
+    //  Serial.println(y);
   }
   if(state){
     if(sw){
@@ -237,17 +238,17 @@ void resetReception() {
 
 void servo_init(){
 // Allow allocation of all timers
-    // ESP32PWM::allocateTimer(0);
-    // ESP32PWM::allocateTimer(1);
+    ESP32PWM::allocateTimer(0);
+    ESP32PWM::allocateTimer(1);
     ESP32PWM::allocateTimer(2);
     ESP32PWM::allocateTimer(3);
   base.setPeriodHertz(50);// Standard 50hz servo
-  base.attach(BASESERVO_PIN, 500, 2400);
+  base.attach(BASESERVO_PIN, 500, 2500);
   head.setPeriodHertz(50);
-  head.attach(HEADSERVO_PIN, 500, 2400); 
+  head.attach(HEADSERVO_PIN, 500, 2500); 
 
-  // BRUSHLESS.setPeriodHertz(50);
-  // BRUSHLESS.attach(BRUSHLESS_PIN, 500, 2400);
+   BRUSHLESS.setPeriodHertz(50);
+   BRUSHLESS.attach(BRUSHLESS_PIN, 500, 2500);
 
 }
 
