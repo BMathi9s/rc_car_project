@@ -9,6 +9,10 @@
 
 RF24 radio(4, 5); // (CE, CSN)
 MPU6050 mpu;      // gyro in headset
+// Variables to store offsets
+float yawOffset = 0;
+float pitchOffset = 0;
+float rollOffset = 0;
 
 // Timeout variables
 unsigned long previousMillis = 0; // Stores the last time a packet was sent
@@ -76,7 +80,7 @@ void setup() {
       Fastwire::setup(400, true);
   #endif
 
-  Serial.begin(9600); // begin Serial communication
+  Serial.begin(115200); // begin Serial communication
 
   // radio initialization
   radio.begin();      // start radio
@@ -154,7 +158,7 @@ void loop() {
  
   if(rawSW1 == 1 && rawSW1 != oldSW1){
     switch1State = !switch1State;
-    Serial.println(switch1State);
+    //Serial.println(switch1State);
   }
 
   oldSW1 = rawSW1;
@@ -198,15 +202,10 @@ void loop() {
   else if(switch1State){
 
     // Serial.println("GYRO");
-
-        // yaw, pitch and roll in degrees (-180 to 180)
-    float yaw = ypr[0] * 180/M_PI;
-    float pitch = ypr[1] * 180/M_PI;
-    float roll = ypr[2] * 180/M_PI;
-
-    if(rawSW2){
+     if(rawSW2){
       // mpu.reset();
-      Serial.println("reset!! not implementete");
+      Serial.println("reset!! implementete");
+      resetMPUOffsets();
 
       // mpu.initialize(ACCEL_FS::A2G, GYRO_FS::G250DPS);
       // Serial.println(mpu.testConnection() ? F("MPU6050 connection successful") : F("MPU6050 connection failed"));
@@ -216,6 +215,12 @@ void loop() {
       // pitch = 0;
       // roll = 0;
     }
+
+        // yaw, pitch and roll in degrees (-180 to 180)
+    float yaw = (ypr[0] * 180 / M_PI) - yawOffset;
+    float pitch = (ypr[1] * 180 / M_PI) - pitchOffset;
+    float roll = (ypr[2] * 180 / M_PI) - rollOffset;
+      
 
 
     yaw += 90;
@@ -241,12 +246,12 @@ void loop() {
   package.cannonData[1] = leftButtonState;
   package.cannonData[2] = rightButtonState;
 
-  Serial.print("pot: ");
-  Serial.println(rawPot);
-  Serial.print("left: ");
-  Serial.println(leftButtonState);
-  Serial.print("right: ");
-  Serial.println(rightButtonState);
+  // Serial.print("pot: ");
+  // Serial.println(rawPot);
+  // Serial.print("left: ");
+  // Serial.println(leftButtonState);
+  // Serial.print("right: ");
+  // Serial.println(rightButtonState);
   
   
 
@@ -255,6 +260,13 @@ void loop() {
 
   // Check for timeout
   checkTimeout();
+}
+
+
+void resetMPUOffsets() {
+     yawOffset = ypr[0] * 180 / M_PI;
+    pitchOffset = ypr[1] * 180 / M_PI;
+    rollOffset = ypr[2] * 180 / M_PI;
 }
 
 void send() {
@@ -266,7 +278,7 @@ void send() {
     if (rslt) {
         // Serial.println("RECEIVED");
         previousMillis = millis(); // Reset the timeout timer on successful transmission
-        printPackageData();
+        //printPackageData();
     }
     else {
         //Serial.println("Tx failed");
