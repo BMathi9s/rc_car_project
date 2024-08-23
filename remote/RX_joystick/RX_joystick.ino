@@ -98,10 +98,12 @@ void loop() {
         lastReceiveTime = millis();
     }
     non_blocking_stepper.runSpeed();
+    Serial.println(" XXX RECEIVE SUCCESSS XXX ");
+    
 
     checkTimeout(); // Check for timeout condition
 
-    delay(10); // Adding a small delay for smoother control
+    delay(5); // Adding a small delay for smoother control
 }
 
 
@@ -120,8 +122,8 @@ void moveServo(uint8_t channel, int angle) {
 void handlecanon_data(byte speed, byte left, byte right){
     speed = map(speed,0,255,0,180);
     moveServo(BRUSHLESS_CHANNEL, speed);
-    Serial.print(" angle 3th ");
-    Serial.println(speed);
+    // Serial.print(" angle 3th ");
+    // Serial.println(speed);
 
     if(right){
         //Serial.println(" reload right");
@@ -195,7 +197,7 @@ void checkTimeout() {
     unsigned long currentMillis = millis();
     if (currentMillis - lastReceiveTime >= timeoutInterval) {
         // Timeout action here
-        Serial.print("Transmission timeout  :::: Stopping activities ");
+        Serial.println(" XXX RECEIVE FAILED XXX  STOP ");
         stop_motors();
         stop_cannon();
         lastReceiveTime = currentMillis; // Reset the timer
