@@ -2,23 +2,22 @@
 #include <nRF24L01.h>
 #include <RF24.h>
 #include <Arduino.h>
-#include <ESP32Servo.h> 
 #include <AccelStepper.h>
+#include <Wire.h>
+#include <Adafruit_PWMServoDriver.h>
 
 
 
-#define BASESERVO_PIN 25      // GPIO pin used to connect the servo control (digital out)
-#define HEADSERVO_PIN 26
+#define BASESERVO_CHANNEL 0      // GPIO pin used to connect the servo control (digital out)
+#define HEADSERVO_CHANNEL 1
 #define turretinc 2 
-Servo head; // (x)
-Servo base; // (y)
+#define BRUSHLESS_CHANNEL 2
+Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 
-#define BRUSHLESS_PIN 33
-Servo BRUSHLESS; // (y)
 
 #define STEPPER_IN1 15
 #define STEPPER_IN2 2
-#define STEPPER_IN3 22
+#define STEPPER_IN3 33
 #define STEPPER_IN4 32
 AccelStepper non_blocking_stepper(AccelStepper::FULL4WIRE, STEPPER_IN1, STEPPER_IN2, STEPPER_IN3, STEPPER_IN4);
 
@@ -55,8 +54,8 @@ const byte deadZoneMax = 127+10; // 118 + 20
 // initialize  fpv turret
 int xShift = 127;
 int yShift = 127;
-int fpv_inipos_y = 90;
-int fpv_inipos_x = 100;
+int fpv_inipos_y = 80;
+int fpv_inipos_x = 45;
 
 // Declare speedL and speedR as global variables
 float speedL, speedR;
@@ -107,24 +106,21 @@ void loop() {
 
 
 void servo_init(){
-// Allow allocation of all timers
-    ESP32PWM::allocateTimer(0);
-    ESP32PWM::allocateTimer(1);
-    ESP32PWM::allocateTimer(2);
-    ESP32PWM::allocateTimer(3);
-    base.setPeriodHertz(50);// Standard 50hz servo
-    base.attach(BASESERVO_PIN, 500, 2500);
-    head.setPeriodHertz(50);
-    head.attach(HEADSERVO_PIN, 500, 2500); 
-    BRUSHLESS.setPeriodHertz(50);
-    BRUSHLESS.attach(BRUSHLESS_PIN, 500, 2500);
+pwm.begin();
+pwm.setPWMFreq(50);  // Standard servo frequency is 50Hz
 
 }
+void moveServo(uint8_t channel, int angle) {
+  int pulse = map(angle, 0, 180, 102, 550);  // Map 0-180 degrees to PCA9685 pulse range
+  //PWM signals with a resolution of 12 bits (4096 steps), so 500->2500us to 102->512
+  pwm.setPWM(channel, 0, pulse);
+}
+
 
 void handlecanon_data(byte speed, byte left, byte right){
     speed = map(speed,0,255,0,180);
-    BRUSHLESS.write(speed);
-    Serial.print(" Brushless speed:");
+    moveServo(BRUSHLESS_CHANNEL, speed);
+    Serial.print(" angle 3th ");
     Serial.println(speed);
 
     if(right){
@@ -133,7 +129,7 @@ void handlecanon_data(byte speed, byte left, byte right){
       }
     if(left){
        
-        non_blocking_stepper.setSpeed(100); //problem with the library, it is not turn ccw
+        non_blocking_stepper.setSpeed(1000); //problem with the library, it is not turn ccw
         //Serial.println(" reload left");
       }
     if(!left  && !right){
@@ -144,8 +140,8 @@ void handlecanon_data(byte speed, byte left, byte right){
 
 
 void stop_cannon(){
- //BRUSHLESS.write(0);
-  //no step
+  //moveServo(BRUSHLESS_CHANNEL, 0);
+  //non_blocking_stepper.setSpeed(0); // Stop movement
 }
 // Handle joystick for servo (camera) movement
 void handleServoJoystick(byte x, byte y, byte sw, byte state){
@@ -184,9 +180,8 @@ void handleServoJoystick(byte x, byte y, byte sw, byte state){
     xShift = x;
     yShift = y;
   }
-
-  head.write(xShift);
-  base.write(yShift);
+  moveServo(BASESERVO_CHANNEL, yShift);
+  moveServo(HEADSERVO_CHANNEL, xShift);
 }
 
 // Stop the motors
