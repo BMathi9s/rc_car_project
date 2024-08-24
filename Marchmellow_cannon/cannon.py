@@ -27,7 +27,7 @@ cannon.set_camera_scope(16)
 while cap.isOpened():
     time_elapsed = time.time() - prev_time
     print("FPS : ", 1/time_elapsed)
-    if time_elapsed > 1./fps_limit:
+    if True:
         prev_time = time.time()
 
         ret, frame = cap.read()
