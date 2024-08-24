@@ -3,7 +3,7 @@ import cv2
 def main():
     # Open the default camera (usually the first one)
     cap = cv2.VideoCapture(0)
-
+    prev_time = 0
     # Check if the camera opened successfully
     if not cap.isOpened():
         print("Error: Could not open camera.")
@@ -11,8 +11,10 @@ def main():
 
     while True:
         # Capture frame-by-frame
+        time_elapsed = time.time() - prev_time
+        print(1/time_elapsed)
         ret, frame = cap.read()
-
+        
         # Display the resulting frame
         cv2.imshow('Camera', frame)
 
