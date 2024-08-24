@@ -1,4 +1,5 @@
 import numpy as np
+from adafruit_servokit import ServoKit
 
 class turret:
     def __init__(self, base_channel, cannon_channel, base_angle=90, cannon_angle=90, function_type_x='exponential', function_type_y='exponential'):
