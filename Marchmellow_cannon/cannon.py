@@ -20,7 +20,7 @@ prev_time = 0
 center_of_screen = 0.5
 
 # Initialize the cannon with specific function types for x and y axis movements
-cannon = turret(base_channel=0, cannon_channel=1, function_type_x='exponential', function_type_y='exponential')
+cannon = turret(base_channel=0, cannon_channel=1, function_type_x='sigmoid', function_type_y='sigmoid')
 cannon.center()
 cannon.set_camera_scope(40)
 
