@@ -1,6 +1,6 @@
 import numpy as np
 
-class Marshmellow_Cannon:
+class turret:
     def __init__(self, base_channel, cannon_channel, base_angle=90, cannon_angle=90, function_type_x='exponential', function_type_y='exponential'):
         self.kit = ServoKit(channels=16)
         self.base_channel = base_channel
