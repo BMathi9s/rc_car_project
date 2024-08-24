@@ -20,12 +20,13 @@ prev_time = 0
 center_of_screen = 0.5
 
 # Initialize the cannon with specific function types for x and y axis movements
-cannon = turret(base_channel=0, cannon_channel=1, function_type_x='cubic', function_type_y='cubic')
+cannon = turret(base_channel=0, cannon_channel=1, function_type_x='sigmoid', function_type_y='cubic')
 cannon.center()
-cannon.set_camera_scope(30)
+cannon.set_camera_scope(25)
 
 while cap.isOpened():
     time_elapsed = time.time() - prev_time
+    print(1/time_elapsed)
     if time_elapsed > 1./fps_limit:
         prev_time = time.time()
 
