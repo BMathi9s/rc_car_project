@@ -26,7 +26,7 @@ cannon.set_camera_scope(16)
 
 while cap.isOpened():
     time_elapsed = time.time() - prev_time
-    print(1/time_elapsed)
+    print("FPS : ", 1/time_elapsed)
     if time_elapsed > 1./fps_limit:
         prev_time = time.time()
 
@@ -50,8 +50,6 @@ while cap.isOpened():
             # Get the nose coordinates 
             nose = results.pose_landmarks.landmark[0]
             
-            print(f'Nose coordinates: {nose}')
-
             lowerlimit, highlimit = 0.49, 0.51
             
             # Check conditions and call cannon.track_face accordingly
