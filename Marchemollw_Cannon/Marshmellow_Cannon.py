@@ -48,7 +48,7 @@ class Marshmellow_Cannon:
         # cannon_angle = self.cannon_angle +  np.arcsin((y_diff)/znormalised)
         
         base_angle = self.base_angle + (-x_diff * self.camera_scope)  # Scaling the difference to the servo angle range
-        cannon_angle = self.cannon_angle + (y_diff * self.camera_scope)
+        cannon_angle = self.cannon_angle + (y_diff * self.camera_scope/2)
 
         # Ensure the angles are within the valid range
         base_angle = max(0, min(180, base_angle))
