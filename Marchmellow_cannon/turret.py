@@ -53,7 +53,7 @@ class turret:
         else:
             raise ValueError("Unsupported function type provided.")
 
-    def track_face(self, x, y, deltax):
+    def track_face(self, x, y):
         x_diff = x - 0.5 
         y_diff = y - 0.5
         
