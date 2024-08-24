@@ -22,7 +22,7 @@ center_of_screen = 0.5
 # Initialize the cannon with specific function types for x and y axis movements
 cannon = turret(base_channel=0, cannon_channel=1, function_type_x='sigmoid', function_type_y='cubic')
 cannon.center()
-cannon.set_camera_scope(25)
+cannon.set_camera_scope(18)
 
 while cap.isOpened():
     time_elapsed = time.time() - prev_time
