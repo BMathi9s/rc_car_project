@@ -50,7 +50,7 @@ while cap.isOpened():
             # Get the nose coordinates 
             nose = results.pose_landmarks.landmark[0]
             
-            lowerlimit, highlimit = 0.49, 0.51
+            lowerlimit, highlimit = 0.495, 0.505
             
             # Check conditions and call cannon.track_face accordingly
             if lowerlimit <= nose.x <=  highlimit and lowerlimit <= nose.y <= highlimit:
