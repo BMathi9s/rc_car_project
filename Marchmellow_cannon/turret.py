@@ -28,7 +28,7 @@ class turret:
         self.kit.servo[self.cannon_channel].angle = self.cannon_angle
 
     def center(self):
-        self.set_angles(40, 135)
+        self.set_angles(140, 135)
 
     def apply_function(self, diff, function_type):
         # Normalize diff to the range [0, 1] based on the maximum possible diff (0.5)
