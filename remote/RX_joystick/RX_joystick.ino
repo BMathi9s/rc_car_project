@@ -38,7 +38,7 @@ byte canon_data[3];
 
 // Timeout variables
 unsigned long lastReceiveTime = 0;
-const long timeoutInterval = 50; // 50 ms timeout interval
+const long timeoutInterval = 100; // 50 ms timeout interval
 
 const int freq = 10000;       // 10 kHz frequency
 const int pwmChannelL = 0;    // PWM channel for left motor
