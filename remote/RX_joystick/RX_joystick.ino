@@ -11,7 +11,7 @@
 #define BASESERVO_CHANNEL 0      // GPIO pin used to connect the servo control (digital out)
 #define HEADSERVO_CHANNEL 1
 #define turretinc 2 
-#define BRUSHLESS_CHANNEL 2
+#define BRUSHLESS_CHANNEL 15
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 
 
