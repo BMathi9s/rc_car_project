@@ -117,10 +117,11 @@ void setup() {
         mpu.PrintActiveOffsets();
         // turn on the DMP, now that it's ready
         Serial.println(F("Enabling DMP..."));
+        Serial.println(F("begin -- Make led green"));
         mpu.setDMPEnabled(true);
 
         // set our DMP Ready flag so the main loop() function knows it's okay to use it
-        Serial.println(F("DMP ready! Waiting for first interrupt..."));
+        //Serial.println(F("DMP ready! Waiting for first interrupt..."));
         dmpReady = true;
 
         // get expected DMP packet size for later comparison
@@ -232,8 +233,8 @@ void loop() {
     yaw = constrain(yaw, 0 ,180);
     pitch = constrain(pitch, 0 ,180);
     roll = constrain(roll, 0 ,180);
-    package.servoData[0] = pitch;   // (X)
-    package.servoData[1] = yaw;     // (Y)
+    package.servoData[0] = 180 - pitch;   // (X)
+    package.servoData[1] = 180 - yaw;     // (Y)
     package.servoData[2] = rawSW2;  // we won't send the roll because it won't control the servo direction
   }
 
