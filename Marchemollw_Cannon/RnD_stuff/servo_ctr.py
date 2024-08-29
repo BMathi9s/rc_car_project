@@ -7,13 +7,9 @@ kit = ServoKit(channels=16)
 # Control a servo on channel 0
 while True:
     # Move servo to 0 degrees
-    kit.servo[0].angle = 0
+    kit.servo[0].angle = 90
     time.sleep(1)
-    kit.servo[1].angle = 0
+    kit.servo[1].angle = 90
     time.sleep(1)
 
-    # Move servo to 180 degrees
-    kit.servo[1].angle = 180
-    time.sleep(1)
-    kit.servo[0].angle = 180
-    time.sleep(1)
+  
