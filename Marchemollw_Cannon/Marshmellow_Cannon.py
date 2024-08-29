@@ -11,6 +11,7 @@ class Marshmellow_Cannon:
         self.kit.servo[self.base_channel].angle = self.base_angle
         self.kit.servo[self.cannon_channel].angle = self.cannon_angle
         self.camera_scope = 90
+        #base from 180->0(cw), cannon from 100->180(cw)
     
     def set_camera_scope(self, scope):
         #Center the servos at 90 degrees.
@@ -52,7 +53,8 @@ class Marshmellow_Cannon:
 
         # Ensure the angles are within the valid range
         base_angle = max(0, min(180, base_angle))
-        cannon_angle = max(0, min(180, cannon_angle))
+        cannon_angle = max(100, min(180, cannon_angle))
+        #base from 180->0(cw), cannon from 100->180(cw)
 
         # Set the new angles
         self.set_angles(base_angle, cannon_angle)
