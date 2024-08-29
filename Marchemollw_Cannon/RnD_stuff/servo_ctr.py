@@ -9,7 +9,7 @@ while True:
     # Move servo to 0 degrees
     kit.servo[0].angle = 90
     time.sleep(1)
-    kit.servo[1].angle = 180
+    kit.servo[1].angle = 100
     time.sleep(1)
 
   
