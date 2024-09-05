@@ -20,7 +20,6 @@ Servo Calibration: `python Research_and_Development/servo_ctr_manual.py`
 
 ## Project Structure
 
-`rc_car_ctr(main)` - Contains the main control code for the RC car.
 
 `Marchemollw_Cannon` - AI for the marshmallow cannon:  
 - **Auto_tracking_main.py** - Main AI code.  
@@ -39,7 +38,6 @@ Servo Calibration: `python Research_and_Development/servo_ctr_manual.py`
 - **RnD_stuff_models** - Various AI models tested.  
 - **servo_ctr_manual.py** - Manual servo angle input for testing/calibration.  
 - **test_camera.py** - Camera test script.
+- **venv_command.txt** - Useful Linux commands.
 
 `requirements.txt` - Dependencies for the Python virtual environment.
-
-`venv_command.txt` - Useful Linux commands.
